@@ -20,7 +20,7 @@ Here are some ideas to get you started:
 
 [![Linkedin](https://img.shields.io/badge/-aliuahma-05122A?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/aliuahma)](https://www.linkedin.com/in/aliuahma)
 
-- 📔 I’m currently a student studying Computer Science at Stanford 
+- 📔 I’m currently a 2nd year student studying Computer Science at Stanford 
 - 🌱 I'm interested in Robotics, Machine Learning, and Natural Language Processing
 
 <a href="https://github.com/aliuahma">
