@@ -20,8 +20,7 @@ Here are some ideas to get you started:
 
 [![Linkedin](https://img.shields.io/badge/-aliuahma-05122A?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/aliuahma)](https://www.linkedin.com/in/aliuahma)
 
-- 📔 I’m currently a 2nd year student studying Computer Science at Stanford 
-- 🌱 I'm interested in Robotics, Machine Learning, and Natural Language Processing
+I'm currently a 2nd year student studying Computer Science and Mathematics at Stanford! Right now, I'm interested in robotic control and perception, machine learning, and natural language processing. Please reach out through LinkedIn or through Discord `@aliua`!
 
 <a href="https://github.com/aliuahma">
   <img height="180em" src="https://github-readme-stats-eight-theta.vercel.app/api?username=aliuahma&show_icons=true&theme=tokyonight&include_all_commits=true&count_private=true"/>
