@@ -22,6 +22,9 @@ Here are some ideas to get you started:
 
 I'm currently a 2nd year student studying Computer Science and Mathematics at Stanford! Right now, I'm interested in robotic control and perception, machine learning, and natural language processing. Please reach out through LinkedIn or through Discord `@aliua`!
 
-<a href="https://github.com/aliuahma">
-  <img height="180em" src="https://github-readme-stats-eight-theta.vercel.app/api?username=aliuahma&show_icons=true&theme=tokyonight&include_all_commits=true&count_private=true"/>
+<a href="https://github.com/anuraghazra/github-readme-stats">
+  <img height=200 align="center" src="https://github-readme-stats.vercel.app/api/?username=aliuahma&count_private=true&theme=radical&rank_icon=github" />
+</a>
+<a href="https://github.com/anuraghazra/github-readme-stats">
+  <img height=200 align="center" src="https://github-readme-stats.vercel.app/api/top-langs/?username=aliuahma&size_weight=0.4&count_weight=0.6&hide=Makefile,Tex,SCSS,jupyter%20notebook,CMake,Common%20Lisp&layout=compact&theme=radical" />
 </a>
