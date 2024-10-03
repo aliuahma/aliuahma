@@ -20,7 +20,7 @@ Here are some ideas to get you started:
 
 [![Linkedin](https://img.shields.io/badge/-aliuahma-05122A?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/aliuahma)](https://www.linkedin.com/in/aliuahma)
 
-I'm currently a 2nd year student studying Computer Science and Mathematics at Stanford! Right now, I'm interested in robotic control and perception, machine learning, and natural language processing. Please reach out through LinkedIn or through Discord `@aliua`!
+Undergraduate computer science student at Stanford University interested in robotic learning, control, and perception
 
 <a href="https://github.com/anuraghazra/github-readme-stats">
   <img height=200 align="center" src="https://github-readme-stats.vercel.app/api/?username=aliuahma&count_private=true&theme=radical&rank_icon=github" />
