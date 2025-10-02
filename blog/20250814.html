@@ -21,6 +21,18 @@
     <link rel="stylesheet" href="/assets/css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-serif/1.0.0/fonts.min.css" async>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap" async>
+    
+    <!-- MathJax for LaTeX math rendering -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
     <div class="container">
@@ -40,13 +52,33 @@
             <p class="italic">August 14, 2025</p>
 
             <p>
-                Caption.
+                Big answers to even bigger questions.
             </p>
 
             <hr>
 
             <p>
-                Content.
+                
+            </p>
+
+            <p>
+                Let's consider the energy involved. The mass of the Sun is approximately $M_{\odot} = 1.989 \times 10^{30}$ kg, while a lion has a mass of roughly $m_{\text{lion}} = 200$ kg.
+            </p>
+
+            <p>
+                So our army of $10^{30}$ lions has a total mass of:
+                $$M_{\text{lions}} = 10^{30} \times 200 \text{ kg} = 2 \times 10^{32} \text{ kg}$$
+            </p>
+
+            <p>
+                This means our lion army outweighs the Sun by a factor of:
+                $$\frac{M_{\text{lions}}}{M_{\odot}} = \frac{2 \times 10^{32}}{1.989 \times 10^{30}} \approx 100$$
+            </p>
+
+            <p>
+                But mass isn't everything. The Sun's luminosity is $L_{\odot} = 3.828 \times 10^{26}$ watts, which means it releases energy equivalent to:
+                $$E = \frac{L_{\odot}}{c^2} \times c^2 = 4.26 \times 10^9 \text{ kg/s}$$
+                of mass-energy conversion per second.
             </p>
 
             <p class="with-space italic">
