@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Ali Ahmad</title>
+
+    <!-- Standard favicon -->
+    <link rel="icon" type="image/x-icon" href="/assets/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png">
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/assets/favicon/apple-touch-icon.png">
+
+    <!-- Android Chrome Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon/android-chrome-512x512.png">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/site.webmanifest">
+
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-serif/1.0.0/fonts.min.css" async>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap" async>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <div class="header-nav">
+                <h1>
+                    <a href="/" class="site-title">Ali Ahmad</a>
+                </h1>
+                <nav class="nav-links">
+                    <a href="/" class="nav-item current" data-page="home">Home</a>
+                    <a href="/blog.html" class="nav-item" data-page="blog">Blog</a>
+                    <a href="/advice.html" class="nav-item" data-page="advice">Advice</a>
+                </nav>
+            </div>
+
+        <h2>
+            About Me
+        </h2>
+
+        <p>
+
+        </p>
+
+        <p>
+            I'm currently a junior at <a href="https://www.stanford.edu">Stanford University</a>,
+            studying CS. I'm working at <span id="obfuscated-text-1"></span> as a research intern focusing
+            on robot foundation models. I'm interested in robotics and generative models. 
+        </p>
+
+        <p>
+            I previously did research on spatial reasoning evaluations with <a href="https://ai.stanford.edu/~sharonal/">Sharon Lee</a> and 
+            <a href="https://ai.stanford.edu/~sunfanyun/">Fan-Yun Sun</a>. I also researched robotic dexterous manipulation with <a href="https://wualbert.github.io">Albert Wu</a>
+            under <a href="https://tml.stanford.edu/people/karen-liu">Karen Liu</a>. I worked at <a href="https://www.gotrestle.com">Trestle</a> as a SWE intern. I 
+            was a software team member of <a href="https://www.stanfordrobosub.org">Stanford AUV</a>, 
+            where I wrote controls for autonomous underwater vehicles.
+        </p>
+
+        <p>
+            I coached and mentored a high school VEX robotics team from 2023-2025. In our final year, 
+            we won the world championship! You can <a href="https://www.youtube.com/watch?v=BcMVKxYTlHo">click 
+            here to watch our 2025 World Championship recap.</a>
+        </p>
+
+        <!-- <p>
+            If you're interested, here's a <a href="/bio.html">longer, more informal bio</a>.
+        </p> -->
+
+        <h2>
+            News
+        </h2>
+        
+        <p>
+        May 2025 — My team <a href="https://www.youtube.com/watch?v=BcMVKxYTlHo">won the VEX Robotics World Championship</a>!
+        <br>
+        April 2025 — I joined <span id="obfuscated-text-2"></span> as a research intern.
+        <br>
+        November 2024 — I joined <a href="https://tml.stanford.edu/">The Movement Lab</a> as a research assistant.
+        <br>
+        September 2024 — I completed my internship at <a href="https://www.gotrestle.com">Trestle</a>!
+        <br>
+        June 2024 — I joined <a href="https://www.gotrestle.com">Trestle</a> as a software engineering intern.
+        <br>
+        September 2023 — I started attending <a href="https://www.stanford.edu">Stanford</a>!
+        </p>
+        
+        <h2>
+            Where to Find Me
+        </h2>
+
+        <p>
+            I love talking about anything and everything! I'm pretty easy to reach.
+            <ul>
+                <li>Email: first name last name @ stanford dot edu</li>
+                <li>Twitter: <a href="https://x.com/aliuahma">@aliuahma</a></li>
+                <li>Github: <a href="https://github.com/aliuahma">@aliuahma</a></li>
+                <li>LinkedIn: <a href="https://linkedin.com/in/aliuahma">@aliuahma</a></li>
+            </ul>
+        </p>
+
+        <p class="with-space">
+            Website design inspired by <a href="https://zietek.dev">Jacob Zietek</a>
+            <br>
+            <span class="italic">Edited August 15, 2025</span>
+        </p>
+        
+        </div>
+    </div>
+    
+    <script>
+        function generateRandomText(length) {
+            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        function updateObfuscatedText() {
+            const element1 = document.getElementById('obfuscated-text-1');
+            const element2 = document.getElementById('obfuscated-text-2');
+            
+            if (element1) {
+                element1.textContent = generateRandomText(5);
+            }
+            if (element2) {
+                element2.textContent = generateRandomText(5);
+            }
+        }
+        
+        setInterval(updateObfuscatedText, 50);
+        
+        updateObfuscatedText();
+    </script>
+</body>
+</html>

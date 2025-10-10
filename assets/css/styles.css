@@ -51,6 +51,11 @@ p {
     font-family: "Times New Roman", Times, serif;
 }
 
+ol, ul, li {
+    font-size: inherit;
+    line-height: inherit;
+}
+
 .serif {
     font-family: Georgia, serif;
 }
@@ -100,6 +105,15 @@ a {
 
 a:hover {
     color: #666;
+}
+
+/* Remove underline from links in h2 elements */
+h2 a {
+    text-decoration: none;
+}
+
+h2 a:hover {
+    color: #1a1a1a;
 }
 
 /* Header */
@@ -211,8 +225,17 @@ footer {
 /* Line length control */
 .content p {
     font-size: 0.95rem;
-    line-height: 1.6;
+    line-height: 1.5;
 }
+
+.content ol, .content ul {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* .content li {
+    margin-bottom: 0.5rem;
+} */
 
 /* Responsive adjustments */
 @media (max-width: 600px) {
