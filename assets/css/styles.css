@@ -1,4 +1,17 @@
 /* Base styles */
+/* Hide scrollbar for Chrome, Safari and Opera */
+::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+html {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
 body {
     background-color: #f5f4ef;
     color: #1a1a1a;
@@ -11,8 +24,11 @@ body {
 /* Container */
 .container {
     margin: 0;
-    padding: 0 20px;
+    padding: 2rem 20px 0 20px;
+    /* Moved padding here */
     font-family: "Times New Roman", Times, serif;
+    flex: 1;
+    /* Pushes footer down */
 }
 
 .content {
@@ -31,7 +47,12 @@ body {
 }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: "Times New Roman", Times, serif;
 }
 
@@ -51,7 +72,9 @@ p {
     font-family: "Times New Roman", Times, serif;
 }
 
-ol, ul, li {
+ol,
+ul,
+li {
     font-size: inherit;
     line-height: inherit;
 }
@@ -69,7 +92,9 @@ ol, ul, li {
 }
 
 
-#obfuscated-text, #obfuscated-text-1, #obfuscated-text-2 {
+#obfuscated-text,
+#obfuscated-text-1,
+#obfuscated-text-2 {
     font-family: 'Courier New', Courier, monospace;
     font-weight: normal;
 }
@@ -84,7 +109,8 @@ ol, ul, li {
 }
 
 .with-space {
-    margin-top: 2rem; /* Add space above the line break */
+    margin-top: 2rem;
+    /* Add space above the line break */
 }
 
 .bold {
@@ -172,7 +198,8 @@ section {
 }
 
 /* Responsive images and figures */
-.wide-image, .wide-figure {
+.wide-image,
+.wide-figure {
     max-width: calc(100vw - 40px);
     width: auto;
     height: auto;
@@ -214,7 +241,8 @@ footer {
 }
 
 .footer-left {
-    font-size: 1.5rem;  /* Adjust size as needed */
+    font-size: 1.5rem;
+    /* Adjust size as needed */
 }
 
 .footer-right {
@@ -228,7 +256,8 @@ footer {
     line-height: 1.5;
 }
 
-.content ol, .content ul {
+.content ol,
+.content ul {
     font-size: 0.95rem;
     line-height: 1.5;
 }
@@ -242,16 +271,49 @@ footer {
     body {
         padding: 1rem 0;
     }
-    
+
     .container {
         padding: 0 20px;
     }
-    
+
     h1 {
         font-size: 1.75rem;
     }
-    
+
+
     .content {
         font-size: 0.9rem;
     }
+}
+
+html,
+body {
+    /* removed fixed height to prevent clipping */
+    margin: 0;
+}
+
+body {
+    font-family: 'Crimson Text', serif;
+    background-color: #f4f1ea;
+    color: #1a1a1a;
+    line-height: 1.6;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    /* Allow growing */
+}
+
+.ascii-art {
+    font-family: monospace;
+    white-space: pre;
+    overflow: hidden;
+    line-height: 0.55;
+    width: 100%;
+    font-size: 0.6vw;
+    /* Larger ensuring fill */
+    margin-top: 0;
+    margin-bottom: 0;
+    color: #1a1a1a;
+    letter-spacing: 0;
 }
