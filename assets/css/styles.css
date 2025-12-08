@@ -317,3 +317,14 @@ body {
     color: #1a1a1a;
     letter-spacing: 0;
 }
+
+@media (max-width: 600px) {
+    .ascii-art {
+        font-size: 6px;
+        /* Larger fixed size for visibility */
+        width: 150%;
+        /* Allow it to be wider than screen */
+        margin-left: -25%;
+        /* Center it roughly */
+    }
+}
