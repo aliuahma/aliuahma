@@ -17,7 +17,7 @@ body {
     color: #1a1a1a;
     padding: 2rem 0;
     line-height: 1.25;
-    font-family: "Times New Roman", Times, serif;
+    font-family: serif;
     letter-spacing: -0.0px;
 }
 
@@ -26,7 +26,7 @@ body {
     margin: 0;
     padding: 2rem 20px 0 20px;
     /* Moved padding here */
-    font-family: "Times New Roman", Times, serif;
+    font-family: serif;
     flex: 1;
     /* Pushes footer down */
 }
@@ -53,7 +53,7 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: "Times New Roman", Times, serif;
+    font-family: serif;
 }
 
 h1 {
@@ -69,7 +69,7 @@ h2 {
 }
 
 p {
-    font-family: "Times New Roman", Times, serif;
+    font-family: serif;
 }
 
 ol,
@@ -308,7 +308,7 @@ body {
     font-family: monospace;
     white-space: pre;
     overflow: hidden;
-    line-height: 0.55;
+    line-height: 1.0;
     width: 100%;
     font-size: 0.6vw;
     /* Larger ensuring fill */
