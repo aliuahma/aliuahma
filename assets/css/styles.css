@@ -304,27 +304,54 @@ body {
     /* Allow growing */
 }
 
-.ascii-art {
+.ascii-art-base {
     font-family: monospace;
     white-space: pre;
-    overflow: hidden;
     line-height: 1.0;
+    color: #1a1a1a;
+    letter-spacing: 0;
+}
+
+.ascii-art-bottom {
+    overflow: hidden;
     width: 100%;
     font-size: 0.6vw;
     /* Larger ensuring fill */
     margin-top: 0;
     margin-bottom: 0;
-    color: #1a1a1a;
-    letter-spacing: 0;
 }
 
+.ascii-art-side {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 650px;
+    z-index: -1;
+    /* Behind content if overlap somehow happens, though layout should prevent it */
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+    font-size: min(0.4vw, 0.5vh);
+    /* Adjust as needed for the side view */
+    max-height: 100vh;
+}
+
+
 @media (max-width: 600px) {
-    .ascii-art {
+    .ascii-art-bottom {
         font-size: 6px;
         /* Larger fixed size for visibility */
         width: 150%;
         /* Allow it to be wider than screen */
         margin-left: -25%;
         /* Center it roughly */
+    }
+}
+
+@media (max-width: 1000px) {
+    .ascii-art-side {
+        display: none;
     }
 }
