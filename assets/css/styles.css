@@ -338,6 +338,21 @@ body {
     max-height: 100vh;
 }
 
+.ascii-art-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    font-size: 0.65vw;
+    color: #c8c5bc;
+}
+
 
 @media (max-width: 600px) {
     .ascii-art-bottom {
@@ -347,6 +362,10 @@ body {
         /* Allow it to be wider than screen */
         margin-left: -25%;
         /* Center it roughly */
+    }
+
+    .ascii-art-background {
+        font-size: 4px;
     }
 }
 
