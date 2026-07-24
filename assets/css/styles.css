@@ -303,8 +303,10 @@ figure {
 
 .wide-image,
 .wide-figure {
-    width: min(90vw, 1100px);
-    max-width: none;
+    clear: right;
+    width: max-content;
+    min-width: 100%;
+    max-width: min(70vw, 1000px);
 }
 
 .content-centered .wide-image,
@@ -334,14 +336,19 @@ figcaption,
 }
 
 .display-math {
-    max-width: 100%;
-    margin: 2rem 0;
+    clear: right;
+    width: max-content;
+    min-width: 100%;
+    max-width: min(70vw, 1000px);
+    margin: 1.25rem 0;
+    margin-left: 50%;
     padding: 0.25rem 0 0.5rem;
     overflow-x: auto;
     overflow-y: hidden;
     font-size: 1.5rem;
     line-height: 2rem;
     scrollbar-width: thin;
+    transform: translateX(-50%);
 }
 
 .display-math mjx-container {
@@ -519,6 +526,8 @@ footer {
     .wide-image,
     .wide-figure {
         width: 100%;
+        min-width: 0;
+        max-width: 100%;
     }
 
     .content-centered .wide-image,
@@ -535,8 +544,13 @@ footer {
     }
 
     .display-math {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: 0;
         font-size: 1.3rem;
         line-height: 1.75rem;
+        transform: none;
     }
 
     .sidenote {
