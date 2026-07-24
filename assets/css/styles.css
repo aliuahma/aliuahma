@@ -36,6 +36,7 @@ body {
     font-kerning: normal;
     font-variant-numeric: oldstyle-nums proportional-nums;
     text-rendering: optimizeLegibility;
+    counter-reset: sidenote-counter;
 }
 
 ::selection {
@@ -347,6 +348,60 @@ figcaption,
     min-width: max-content;
 }
 
+.sidenote {
+    position: relative;
+    float: right;
+    clear: right;
+    width: 42%;
+    margin-top: 0.3rem;
+    margin-right: -50%;
+    margin-bottom: 1rem;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.35;
+    vertical-align: baseline;
+}
+
+.sidenote-number {
+    counter-increment: sidenote-counter;
+}
+
+.sidenote-number::after,
+.sidenote::before {
+    position: relative;
+    font-variant-numeric: oldstyle-nums;
+    vertical-align: baseline;
+}
+
+.sidenote-number::after {
+    top: -0.5rem;
+    left: 0.1rem;
+    content: counter(sidenote-counter);
+    font-size: 0.8rem;
+}
+
+.sidenote::before {
+    top: -0.35rem;
+    content: counter(sidenote-counter) " ";
+    font-size: 0.8rem;
+}
+
+input.margin-toggle {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    border: 0;
+    white-space: nowrap;
+}
+
+label.margin-toggle {
+    cursor: pointer;
+}
+
 footer {
     display: flex;
     align-items: center;
@@ -482,6 +537,19 @@ footer {
     .display-math {
         font-size: 1.3rem;
         line-height: 1.75rem;
+    }
+
+    .sidenote {
+        display: none;
+    }
+
+    .margin-toggle:checked + .sidenote {
+        display: block;
+        float: none;
+        width: auto;
+        margin: 1rem 0 1.5rem 1rem;
+        padding-left: 1rem;
+        border-left: 1px solid var(--rule);
     }
 
     .header-nav,
