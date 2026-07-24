@@ -1,12 +1,12 @@
 @charset "UTF-8";
 
 :root {
-    color-scheme: light dark;
-    --paper: #fffff8;
-    --ink: #111111;
-    --muted: #5f5e58;
-    --rule: #d8d6cc;
-    --link-hover: #4f4e49;
+    color-scheme: light;
+    --paper: #f4f1ea;
+    --ink: #1a1a1a;
+    --muted: #666666;
+    --rule: #d6d2c7;
+    --link-hover: #666666;
     --serif: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Crimson Text", serif;
     --mono: "IBM Plex Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
@@ -39,8 +39,8 @@ body {
 }
 
 ::selection {
-    background: #e8e2c9;
-    color: #111111;
+    background: #ded8c7;
+    color: #1a1a1a;
 }
 
 .container {
@@ -397,29 +397,9 @@ footer {
     align-items: flex-end;
     justify-content: center;
     overflow: hidden;
-    color: #d7d4ca;
+    color: #c8c5bc;
     font-size: 0.65vw;
     pointer-events: none;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --paper: #151515;
-        --ink: #dddddd;
-        --muted: #a9a9a2;
-        --rule: #3e3e3a;
-        --link-hover: #ffffff;
-    }
-
-    ::selection {
-        background: #4a483d;
-        color: #ffffff;
-    }
-
-    .ascii-art-background,
-    .ascii-art-side {
-        color: #2f2f2b;
-    }
 }
 
 @media (max-width: 900px) {
