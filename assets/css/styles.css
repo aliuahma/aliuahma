@@ -18,7 +18,7 @@
 }
 
 html {
-    font-size: 15px;
+    font-size: 11.25px;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -357,7 +357,7 @@ figcaption,
     margin-right: -50%;
     margin-bottom: 1rem;
     color: var(--muted);
-    font-size: 0.75rem;
+    font-size: 1rem;
     line-height: 1.35;
     vertical-align: baseline;
 }
