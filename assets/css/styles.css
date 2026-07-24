@@ -357,7 +357,7 @@ figcaption,
     margin-right: -50%;
     margin-bottom: 1rem;
     color: var(--muted);
-    font-size: 1rem;
+    font-size: 0.75rem;
     line-height: 1.35;
     vertical-align: baseline;
 }
