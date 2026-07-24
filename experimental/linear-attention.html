@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Linear Attention | Ali Ahmad</title>
+
+    <link rel="icon" type="image/x-icon" href="../assets/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="../assets/favicon/apple-touch-icon.png">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap" async>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+            svg: { fontCache: "global" }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <article class="content-blog-post">
+            <h2>Linear Attention</h2>
+            <p class="italic">July 23, 2026</p>
+            <p><a href="index.html">Experimental Writing</a></p>
+
+            <p>linear attention is softmax attention - softmax:</p>
+
+            <p>softmax attention:</p>
+
+            <div class="display-math">\[o_t = \sum^t_{j=1}\frac{\exp(q_tk_j^\top)}{\sum_{l=1}^t \exp(q_tk_l^\top)}v_j\]</div>
+
+            <p>linear attention:</p>
+
+            <div class="display-math">\[o_t = \sum_{j=1}^t q_tk_j^\top v_j\]</div>
+
+            <p>the query vector remains the same since it only depends on $t$ which is held constant for $o_t$:</p>
+
+            <div class="display-math">\[o_t = q_t\sum_{j=1}^t k_j^\top v_j\]</div>
+
+            <p>let</p>
+
+            <div class="display-math">\[S_t = \sum_{j=1}^t k_j^\top v_j \in \mathbb R^{d_k \times d_v}\]</div>
+
+            <p>(typically $d_v = d_k$). we refer to $S_t$ as the "matrix-valued hidden state". note that $S_t$ is the sum of $t$ many rank 1 outer products. now, move the key and value vectors at the $t$'th position out of the summation:</p>
+
+            <div class="display-math">\[S_t = \sum_{j=1}^{t-1} k_j^\top v_j + k_t^\top v_t\]</div>
+
+            <p>note that the first term is $S_{t-1}$. this allows us to write $S_t$ as a recurrence:</p>
+
+            <div class="display-math">\[S_t = S_{t-1} + k^\top_t v_t, \quad o_t = S_t q_t\]</div>
+
+            <p>in regular softmax attention, we need to store the key and value vectors in memory, so memory requirements grow linearly in sequence length. in linear attention, we only need to store the hidden state, so the memory requirement is constant.</p>
+
+            <p>how do we train efficiently? there are currently 3 downsides: 1. sequential computation 2. element-wise operations -&gt; cannot leverage tensor cores 3. realizing every $S_t$ leads to high IO cost</p>
+
+            <p>the fully parallel form:</p>
+
+            <div class="display-math">\[O = ((QK^\top) \odot M) V \]</div>
+
+            <p>is quadratic in compute complexity because of the causal mask $M$.</p>
+
+            <p>in the recurrent form, $S_tq_t$ is a matrix vector multiplication. $v_t k_t^\top$ is a rank-1 outer product update. neither of these are optimized for gpu tensor cores.  -</p>
+
+            <p>chunkwise parallel form: split the sequence into non-overlapping chunks with size $C$.</p>
+
+            <p>this gives us an inter-chunk recurrence:</p>
+
+            <div class="display-math">\[S_{[t]} = S_{[t-1]}+K^\top_{[t]}V_{[t]}\]</div>
+
+            <p>the state passing is still sequential but it greatly reduces the number of recurrent steps ($L \rightarrow L/C$)</p>
+
+            <p>likewise, we can compute the outputs in parallel form per chunk:</p>
+
+            <div class="display-math">\[O_{[t]} = Q_{[t]} S_{[t-1]} + ((Q_{[t]}K_{[t]}^\top)\odot M) V_{[t]}\]</div>
+
+            <p>we can further improve efficiency using IO-aware implementations like Flash Linear Attention</p>
+
+            <p>in practice, linear attention underperforms compared to standard softmax attention. part of the reason for this is a lack of recency bias. one way to address this is to use a decay factor $\gamma$ as a gating mechanism to reduce/modulate the inference of earlier tokens. we can then express the state recurrence relation as</p>
+
+            <div class="display-math">\[S_t = \gamma S_{t-1} + k^\top_t v_t, \quad \gamma \in [0,1]\]</div>
+
+            <p>- seen in RetNet, Lightning Attention setting the value of gamma is challenging in practice, and likely task dependent. therefore, we introduce a data-dependent gating mechanism $\gamma_t$ so we can dynamically adjust the decay rate according to the embedding vector. for example, we can implement:</p>
+
+            <div class="display-math">\[S_t = \gamma_t S_{t-1} + k^\top_t v_t, \quad \gamma_t = \sigma(W_\gamma x_t)\]</div>
+
+            <p>- seen in Mamba2, mLSTM, Gated Retention  why restrict ourselves to a scalar gating factor? we can use a more expressive gating factor $G_t$. however, this introduces additional training complexity and challenges. this results in</p>
+
+            <div class="display-math">\[S_t = G_t S_{t-1} + k^\top_t v_t, \quad G_t = \sigma(W_\gamma x_t)^\top \mathbf 1\]</div>
+
+            <ul><li>seen in Gated Linear Attention, HGRN-2, RWKV-6</li></ul>
+
+            <p>let's take a step back and try to understand the update rule better: what does it mean to update by the inner product of the key and value vectors? one way to think about it is that we learn a regression function that maps the key vectors to the value vectors $v_j = f_\theta(k_j)$. this can be regarded as a "neural memory". we can memorize the key-value associations by making the values easily predictable from the keys. how do we train this regression function?</p>
+
+            <p>suppose we choose the dot product as our loss function and SGD as our update rule. then we have</p>
+
+            <div class="display-math">\[\text{Loss}(a, b) = -&lt;a,b&gt;, \quad L_t(S)=-(k_tS)^\top v_t, \quad S_t = S_{t-1}-\beta_t\nabla L_t(S_{t-1})\]</div>
+
+            <p>we can simplify our state update to</p>
+
+            <div class="display-math">\[S_t = S_{t-1} + \beta_t k_t^\top v_t\]</div>
+
+            <p>which is equivalent to the linear attention state matrix update. this suggests that the state update in linear attention is equivalent to training a linear regression model on key-value pairs using SGD. it has an interesting connection to fast weight programming.</p>
+
+            <p>there is a problem though, we can reduce the loss value by simply scaling the transformed vector $\hat v = kS$ instead of rotating it to align with $v$. an alternative is to use square error loss function:</p>
+
+            <div class="display-math">\[L_t(S) = \frac12\|k_t S - v_t\|^2_2, \quad S_t = S_{t-1} + \beta_t k_t^\top (v_t - k_tS_{t-1})\]</div>
+
+            <p>this update rule is known as the delta rule.</p>
+
+            <p>we can visually see here how the delta rule dynamically removes and adds key-value associations. how do we train this kind of model at scale though?</p>
+
+            <p>we fit our update to give a chunkwise parallel form:</p>
+
+            <div class="display-math">\[S_t = S_{t-1} + \beta_t k_t^\top (v_t - k_tS_{t-1})\]</div>
+
+            <div class="display-math">\[= S_{t-1} + \beta_t k_t^\top v_t - \beta_t k_t^\top k_t S_{t-1}\]</div>
+
+            <div class="display-math">\[= (I - \beta_t k_t^\top k_t)S_{t-1} + \beta_t k_t^\top v_t\]</div>
+
+            <p>let $A_t = I - \beta_t k_t^\top k_t$ and $B_t = \beta_t k_t^\top v_t$, then the update rule is</p>
+
+            <div class="display-math">\[S_t = A_t S_{t-1} + B_t\]</div>
+
+            <p>we can express the state at $t$ as</p>
+
+            <div class="display-math">\[S_t = \sum^t_{i=1}(A_t A_{t-1}\cdots A_{i+1})B_i = \sum_{i=1}^t \left( \prod^t_{j = i+1} A_j\right) B_i\]</div>
+
+            <p>since the matrix $S_t$ consists of $t$ terms, we can split them into two groups $i : 1, 2, 3, \cdots, C - 1, C, C+1, C+2, \cdots, t -1, t$ and write</p>
+
+            <div class="display-math">\[S_t = \sum_{i=1}^C \left( \prod^t_{j = i+1} A_j\right) B_i + \sum_{i=C+1}^t \left( \prod^t_{j = i+1} A_j\right) B_i\]</div>
+
+            <div class="display-math">\[ = \sum_{i=1}^C \left( \prod^t_{j = C+1} A_j\right) \left( \prod^C_{j = i+1} A_j\right) B_i + \sum_{i=C+1}^t \left( \prod^t_{j = i+1} A_j\right) B_i\]</div>
+
+            <div class="display-math">\[ = \left( \prod^t_{j = C+1} A_j\right) \sum_{i=1}^C  \left( \prod^C_{j = i+1} A_j\right) B_i + \sum_{i=C+1}^t \left( \prod^t_{j = i+1} A_j\right) B_i\]</div>
+
+            <div class="display-math">\[ = \left( \prod^t_{j = C+1} A_j\right) S_{[1]} + \sum_{i=C+1}^t \left( \prod^t_{j = i+1} A_j\right) B_i\]</div>
+
+            <p>the generalized formula is then</p>
+
+            <div class="display-math">\[\underbrace{S^r_{[t]}}_{\text{curr. state}}  = \underbrace{\left( \prod^{tC+r}_{j = tC+1} A_j\right) S^0_{[1]}}_{\text{propogated state}} + \underbrace{\sum_{i=tC+1}^{tC+r} \left( \prod^{tC+r}_{j = tC+2} A_j\right) B_i}_{\text{new contributions}}\]</div>
+
+            <p><strong>REVISIT THIS PART:</strong> the product of matrices in general cannot be computed efficiently. recall that $A=I-\beta_t k_t^\top k_t$, which has diagonal and low-rank structure</p>
+
+            <div class="display-math">\[\prod^{tC+r}_{j = tC+1} \left(I - \beta_t k_t^\top k_t \right) =I - \sum^{r}_{i=1}k_{[t]}^{i\top} w^i_{[t]}\]</div>
+
+            <p>new contributions can be rewritten as</p>
+
+            <div class="display-math">\[\sum_{i=1}^r k_{[t]}^{i\top}u^i_{[t]}\]</div>
+
+            <p>using the UT transform, we can express the chunk-level recurrence relation in matrix form:</p>
+
+            <div class="display-math">\[S_{[t+1]} = (I  -K^\top_{[t]}W_{[t]})S_{[t]} + K^\top_{[t]U_{[t]}}\]</div>
+
+            <p>and we can now compute the outputs efficiently in parallel</p>
+
+            <div class="display-math">\[O_{[t]} = Q_{[t]}S_{[t]} + (Q_{[t]}K_{[t]}^\top \odot M_{[t]}) (U_{[t]} - W_{[t]} S_{[t]}) \]</div>
+
+            <p>delta update rule has a limitation though: it updates only one key-value association per timestep. using only the current key-value pair for its gradient update. with state matrix $\mathbb R^{d_k} \times \mathbb R^{d_v}$ it takes $d_k$ steps to completely overwrite the memory. we can use the delta update rule with forget gates to improve this:</p>
+
+            <div class="display-math">\[S_t = (I - \beta_t k_t^\top k_t)\alpha_tS_{t-1} + \beta_t k_t^\top v_t\]</div>
+
+            <p>- scalar valued forget gate $\alpha_t \in [0,1]$ e.g. gated deltanet we can further use a more expressive vector-valued forget gate to dynamically control the forgetting speed</p>
+
+            <div class="display-math">\[S_t = (I - \beta_t k_t^\top k_t)\,\text{Diag}(\alpha_t)S_{t-1} + \beta_t k_t^\top v_t\]</div>
+
+            <ul><li>vector-valued forget gate $\alpha_t \in [0,1]^{d_k}$ e.g., kimi delta attention</li></ul>
+
+            <p>as mentioned before, the delta update rule is equivalent to doing SGD on key-value pairs with an MSE loss, where we update after each token.</p>
+
+            <p>one idea is to extend delta net by running multiple gradient steps for each timestep - deltaproduct</p>
+
+            <p>we can also update $S_t$ by solving $\|S-S_{t-1}\|^2_F + \beta_t \|k_tS - v_t\|^2_2$ - longhorn</p>
+
+            <p>these only consider prediction error for the current token. if we use all historical tokens we get</p>
+
+            <div class="display-math">\[\|S-S_{t-1}\|^2_F + \sum_{i=1}^t \beta_i \|k_i S - v_i\|^2_2\]</div>
+
+            <ul><li>seen in mesa layer, mesanet later introduces a chunkwise parallelizable version</li></ul>
+
+            <p>so far we have only considered a simple linear regression formula for our updates. we can use a more expressive mapping by adding a nonlinearity. the question is what nonlinear feature transformation should we use? once we get $q \rightarrow \phi(q)$ and $k \rightarrow \phi(k)$ we can do linear regression on the transformed features.</p>
+
+            <p>one attempt is $\phi(k) = \text{elu}(k) + 1$ - linear attention $\phi(k) =$ random feature map - random feature attention $\phi(k)=$ positive orthogonal random features - performer more examples include skyformer, cosformer, polysketchformer, etc.</p>
+
+            <p>can we instead learn this nonlinear transformation from data? this introduces TTT. let $f_\theta(k)=$ a non-linear function, e.g., MLP. minimize $\|f_\theta(k)-v\|^2_2$ - test time training (ttt)</p>
+
+            <p>we can use TTT + momentum + weight decay for optimizing the regressions - titans</p>
+
+            <p>TTT + large chunk test-time training + muon - ttt done right</p>
+
+            <p>continual learning at test time with next-token prediction  - TTT-E2E</p>
+        </article>
+    </div>
+</body>
+
+</html>
