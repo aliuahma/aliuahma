@@ -338,6 +338,8 @@ figcaption,
     padding: 0.25rem 0 0.5rem;
     overflow-x: auto;
     overflow-y: hidden;
+    font-size: 1.5rem;
+    line-height: 2rem;
     scrollbar-width: thin;
 }
 
@@ -495,6 +497,11 @@ footer {
     figcaption,
     .wide-figure figcaption {
         max-width: 100%;
+    }
+
+    .display-math {
+        font-size: 1.3rem;
+        line-height: 1.75rem;
     }
 
     .header-nav,
