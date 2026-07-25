@@ -409,6 +409,51 @@ label.margin-toggle {
     cursor: pointer;
 }
 
+.citation {
+    font-size: 0.85em;
+    font-variant-numeric: lining-nums tabular-nums;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.references {
+    clear: both;
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+}
+
+.references h3 {
+    margin: 0 0 1.25rem;
+    font-size: 1.5rem;
+    font-style: normal;
+}
+
+.references ol {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.references li {
+    padding-left: 0.25rem;
+    font-size: 1.05rem;
+    line-height: 1.5rem;
+}
+
+.reference-backlinks {
+    margin-left: 0.3em;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.reference-backlinks a {
+    text-decoration: none;
+}
+
+.reference-backlinks a + a {
+    margin-left: 0.35em;
+}
+
 footer {
     display: flex;
     align-items: center;
