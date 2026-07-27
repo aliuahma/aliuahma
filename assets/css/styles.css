@@ -63,6 +63,7 @@ body {
 
 .content-blog-post {
     text-align: left;
+    counter-reset: equation;
 }
 
 h1,
@@ -335,14 +336,14 @@ figcaption,
     line-height: 1.45;
 }
 
+/* Unnumbered display math. */
 .display-math {
-    clear: right;
     width: max-content;
     min-width: 100%;
     max-width: min(70vw, 1000px);
-    margin: 1.25rem 0;
+    margin: 0.75rem 0;
     margin-left: 50%;
-    padding: 0.25rem 0 0.5rem;
+    padding: 0;
     overflow-x: auto;
     overflow-y: hidden;
     font-size: 1.5rem;
@@ -351,8 +352,73 @@ figcaption,
     transform: translateX(-50%);
 }
 
+/*
+ * Numbered equations. Column-width shell so "(n)" sits on the text edge;
+ * MathJax content inside can still overhang like .display-math.
+ *
+ *   <div class="equation" id="eq-attention">\[ ... \]</div>
+ */
+.equation {
+    position: relative;
+    width: 100%;
+    margin: 0.75rem 0;
+    padding: 0;
+    overflow-x: visible;
+    overflow-y: visible;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    counter-increment: equation;
+}
+
+.equation::after {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    color: var(--ink);
+    font-size: 1.15rem;
+    font-style: normal;
+    font-variant-numeric: lining-nums tabular-nums;
+    line-height: 1;
+    content: "(" counter(equation) ")";
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.equation mjx-container {
+    width: max-content;
+    min-width: max-content;
+    max-width: min(70vw, 1000px);
+    margin: 0 !important;
+    margin-left: 50% !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    transform: translateX(-50%);
+}
+
+/* Paragraph margins (1.4rem) otherwise win via collapse and hide any
+   display-math / equation margin tweaks. */
+p:has(+ .display-math),
+p:has(+ .equation),
+ul:has(+ .display-math),
+ul:has(+ .equation),
+ol:has(+ .display-math),
+ol:has(+ .equation) {
+    margin-bottom: 0.75rem;
+}
+
+.display-math + p,
+.display-math + ul,
+.display-math + ol,
+.equation + p,
+.equation + ul,
+.equation + ol {
+    margin-top: 0.75rem;
+}
+
 .display-math mjx-container {
     min-width: max-content;
+    margin: 0 !important;
 }
 
 .sidenote {
@@ -588,13 +654,22 @@ footer {
         max-width: 100%;
     }
 
-    .display-math {
+    .display-math,
+    .equation {
         width: 100%;
         min-width: 0;
         max-width: 100%;
         margin-left: 0;
         font-size: 1.3rem;
         line-height: 1.75rem;
+        transform: none;
+    }
+
+    .equation mjx-container {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: 0 !important;
         transform: none;
     }
 
