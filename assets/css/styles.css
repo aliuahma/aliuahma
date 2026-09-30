@@ -6,6 +6,7 @@
 
 /* Hide scrollbar for IE, Edge and Firefox */
 html {
+    font-size: 95%;
     -ms-overflow-style: none;
     /* IE and Edge */
     scrollbar-width: none;
@@ -32,16 +33,16 @@ body {
 }
 
 .content {
-    max-width: 600px;
+    max-width: 570px;
 }
 
 .content-centered {
-    max-width: 800px;
+    max-width: 760px;
     margin: 0 auto;
 }
 
 .content-blog-post {
-    max-width: 800px;
+    max-width: 760px;
     margin: 0 auto;
     text-align: left;
 }
@@ -326,7 +327,7 @@ body {
     top: 0;
     bottom: 0;
     right: 0;
-    left: 650px;
+    left: 618px;
     z-index: -1;
     /* Behind content if overlap somehow happens, though layout should prevent it */
     display: flex;
@@ -373,4 +374,40 @@ body {
     .ascii-art-side {
         display: none;
     }
+}
+
+/* Dissolve Controls */
+.dissolve-controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 8px;
+    font-family: sans-serif;
+    z-index: 100;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.dissolve-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.dissolve-row:last-child {
+    margin-bottom: 0;
+}
+.d-mode-btn {
+    padding: 4px 8px;
+    border: 1px solid #999;
+    background: #f0f0f0;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+.d-mode-btn.active {
+    background: #333;
+    color: #fff;
+    border-color: #333;
 }

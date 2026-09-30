@@ -84,6 +84,14 @@
 
     <div id="ascii-art" class="ascii-art-base ascii-art-background"></div>
 
+    <div class="dissolve-controls" id="dissolve-controls">
+        <div class="dissolve-row modes-row">
+            <span style="font-size:0.8rem; margin-right: 0.5rem">Animation Trigger:</span>
+            <button class="d-mode-btn active" data-mode="random">Random Interval</button>
+            <button class="d-mode-btn" data-mode="click">Click Screen</button>
+        </div>
+    </div>
+
     <script src="assets/js/ascii-arts.js"></script>
     <script>
         function generateRandomText(length) {
@@ -111,10 +119,163 @@
 
         updateObfuscatedText();
 
-        const artEl = document.getElementById('ascii-art');
-        if (artEl && ASCII_ARTS[CURRENT_ART]) {
-            artEl.textContent = ASCII_ARTS[CURRENT_ART];
+        // ------------------ STOCHASTIC DISSOLVE LOGIC ------------------
+
+        const artKeys = Object.keys(ASCII_ARTS);
+        let currentArtIndex = 0;
+        
+        const offsets = {
+            'snowy-beach': 18,
+            'lighthouse': 0,
+            'panda': 0
+        };
+
+        let linesA, linesB, maxRows, maxCols, thresholds;
+
+        function prepareTransition() {
+            const keyA = artKeys[currentArtIndex];
+            const nextArtIndex = (currentArtIndex + 1) % artKeys.length;
+            const keyB = artKeys[nextArtIndex];
+
+            linesA = ASCII_ARTS[keyA].split('\n');
+            linesB = ASCII_ARTS[keyB].split('\n');
+
+            const offsetA = offsets[keyA] || 0;
+            if (offsetA > 0) linesA = Array(offsetA).fill("").concat(linesA);
+
+            const offsetB = offsets[keyB] || 0;
+            if (offsetB > 0) linesB = Array(offsetB).fill("").concat(linesB);
+
+            maxRows = Math.max(linesA.length, linesB.length);
+            maxCols = 0;
+            linesA.forEach(l => { if (l.length > maxCols) maxCols = l.length; });
+            linesB.forEach(l => { if (l.length > maxCols) maxCols = l.length; });
+
+            // Pad arrays at the TOP so they are flush at the bottom
+            while (linesA.length < maxRows) linesA.unshift("");
+            while (linesB.length < maxRows) linesB.unshift("");
+
+            linesA = linesA.map(l => l.padEnd(maxCols, ' '));
+            linesB = linesB.map(l => l.padEnd(maxCols, ' '));
+
+            // Generate thresholds
+            thresholds = [];
+            for (let r = 0; r < maxRows; r++) {
+                const row = new Float32Array(maxCols);
+                for (let c = 0; c < maxCols; c++) {
+                    row[c] = Math.random();
+                }
+                thresholds.push(row);
+            }
         }
+
+        prepareTransition();
+
+        const artEl = document.getElementById('ascii-art');
+        let currentLinearAlpha = 0;
+
+        function renderDissolve(alpha) {
+            const clampAlpha = Math.max(0, Math.min(1, alpha));
+            let out = "";
+            for (let r = 0; r < maxRows; r++) {
+                for (let c = 0; c < maxCols; c++) {
+                    if (clampAlpha > thresholds[r][c]) {
+                        out += linesB[r][c];
+                    } else {
+                        out += linesA[r][c];
+                    }
+                }
+                out += '\n';
+            }
+            artEl.textContent = out;
+        }
+
+        // Initialize display
+        renderDissolve(0);
+
+        // UI Variables
+        const sliderModes = document.querySelectorAll('.d-mode-btn');
+
+        let mode = 'random';
+        let animFrame;
+        const animDuration = 3500; // 3.5 seconds total sweep
+        let lastTime = 0;
+
+        let randomModeTimeout;
+        let isAnimatingBurst = false;
+
+        function updateAnimation(time) {
+            if (!lastTime) lastTime = time;
+            const delta = time - lastTime;
+            lastTime = time;
+
+            if (isAnimatingBurst) {
+                const step = delta / animDuration;
+                currentLinearAlpha += step;
+
+                let finished = false;
+                if (currentLinearAlpha >= 1) {
+                    currentLinearAlpha = 1;
+                    finished = true;
+                }
+
+                // Easing function: slower at the beginning, slower at the end (easeInOutCubic)
+                const easeInOut = p => p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+                
+                renderDissolve(easeInOut(currentLinearAlpha));
+
+                if (finished) {
+                    isAnimatingBurst = false;
+                    currentArtIndex = (currentArtIndex + 1) % artKeys.length;
+                    prepareTransition();
+                    currentLinearAlpha = 0;
+                }
+            }
+
+            animFrame = requestAnimationFrame(updateAnimation);
+        }
+
+        animFrame = requestAnimationFrame(updateAnimation);
+
+        function triggerPingPongBurst() {
+            if (!isAnimatingBurst) {
+                isAnimatingBurst = true;
+            }
+        }
+
+        function scheduleNextRandom() {
+            if (mode !== 'random') return;
+            const delay = Math.random() * 5000 + 10000; // 10 to 15 seconds
+            randomModeTimeout = setTimeout(() => {
+                triggerPingPongBurst();
+                scheduleNextRandom();
+            }, delay);
+        }
+
+        sliderModes.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                sliderModes.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                mode = e.target.dataset.mode;
+                
+                // Reset state
+                isAnimatingBurst = false;
+                clearTimeout(randomModeTimeout);
+
+                if (mode === 'random') {
+                    scheduleNextRandom();
+                }
+            });
+        });
+
+        // Start default
+        scheduleNextRandom();
+
+        document.addEventListener('click', (e) => {
+            if (mode === 'click' && !document.getElementById('dissolve-controls').contains(e.target)) {
+                triggerPingPongBurst();
+            }
+        });
     </script>
 </body>
 
