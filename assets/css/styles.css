@@ -18,7 +18,7 @@
 }
 
 html {
-    font-size: 14.25px;
+    font-size: 11.4px;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -56,8 +56,8 @@ body {
 .content,
 .content-centered,
 .content-blog-post {
-    width: 52.25%;
-    max-width: 722px;
+    width: 41.8%;
+    max-width: 578px;
     margin: 0 auto;
 }
 
@@ -307,7 +307,7 @@ figure {
     clear: right;
     width: max-content;
     min-width: 100%;
-    max-width: min(66.5vw, 950px);
+    max-width: min(53.2vw, 760px);
 }
 
 .content-centered .wide-image,
@@ -340,7 +340,7 @@ figcaption,
 .display-math {
     width: max-content;
     min-width: 100%;
-    max-width: min(66.5vw, 950px);
+    max-width: min(53.2vw, 760px);
     margin: 0.75rem 0;
     margin-left: 50%;
     padding: 0;
@@ -387,7 +387,7 @@ figcaption,
 .equation mjx-container {
     width: max-content;
     min-width: max-content;
-    max-width: min(66.5vw, 950px);
+    max-width: min(53.2vw, 760px);
     margin: 0 !important;
     margin-left: 50% !important;
     overflow-x: auto;
@@ -584,7 +584,7 @@ footer {
     .content,
     .content-centered,
     .content-blog-post {
-        width: 68.4%;
+        width: 54.72%;
     }
 
     .ascii-art-side {
