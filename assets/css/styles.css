@@ -18,7 +18,7 @@
 }
 
 html {
-    font-size: 15px;
+    font-size: 14.25px;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -47,7 +47,7 @@ body {
 .container {
     position: relative;
     z-index: 1;
-    width: min(87.5%, 1400px);
+    width: min(83.125%, 1330px);
     min-height: 100vh;
     margin: 0 auto;
     padding: 5rem 0 6rem;
@@ -56,8 +56,8 @@ body {
 .content,
 .content-centered,
 .content-blog-post {
-    width: 55%;
-    max-width: 760px;
+    width: 52.25%;
+    max-width: 722px;
     margin: 0 auto;
 }
 
@@ -149,7 +149,7 @@ blockquote footer {
 }
 
 hr {
-    width: 55%;
+    width: 52.25%;
     height: 1px;
     margin: 2rem 0;
     border: 0;
@@ -307,7 +307,7 @@ figure {
     clear: right;
     width: max-content;
     min-width: 100%;
-    max-width: min(70vw, 1000px);
+    max-width: min(66.5vw, 950px);
 }
 
 .content-centered .wide-image,
@@ -328,7 +328,7 @@ figure {
 
 figcaption,
 .wide-figure figcaption {
-    max-width: 55%;
+    max-width: 52.25%;
     margin: 0.65rem auto 0;
     color: var(--muted);
     font-size: 1.05rem;
@@ -340,7 +340,7 @@ figcaption,
 .display-math {
     width: max-content;
     min-width: 100%;
-    max-width: min(70vw, 1000px);
+    max-width: min(66.5vw, 950px);
     margin: 0.75rem 0;
     margin-left: 50%;
     padding: 0;
@@ -387,7 +387,7 @@ figcaption,
 .equation mjx-container {
     width: max-content;
     min-width: max-content;
-    max-width: min(70vw, 1000px);
+    max-width: min(66.5vw, 950px);
     margin: 0 !important;
     margin-left: 50% !important;
     overflow-x: auto;
@@ -425,7 +425,7 @@ ol:has(+ .equation) {
     position: relative;
     float: right;
     clear: right;
-    width: 42%;
+    width: 39.9%;
     margin-top: 0.3rem;
     margin-right: -50%;
     margin-bottom: 1rem;
@@ -551,7 +551,7 @@ footer {
 .ascii-art-side {
     position: fixed;
     z-index: 0;
-    inset: 0 0 0 58%;
+    inset: 0 0 0 55.1%;
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -575,16 +575,16 @@ footer {
     pointer-events: none;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 855px) {
     .container {
-        width: 84%;
+        width: 79.8%;
         padding-top: 4rem;
     }
 
     .content,
     .content-centered,
     .content-blog-post {
-        width: 72%;
+        width: 68.4%;
     }
 
     .ascii-art-side {
@@ -592,7 +592,7 @@ footer {
     }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 722px) {
     .container {
         width: 100%;
         min-height: auto;
