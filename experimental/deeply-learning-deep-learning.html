@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Deeply Learning Deep Learning | Ali Ahmad</title>
+
+    <link rel="icon" type="image/x-icon" href="../assets/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="../assets/favicon/apple-touch-icon.png">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap" async>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+            svg: { fontCache: "global" }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <article class="content-blog-post">
+            <h2>Deeply Learning Deep Learning</h2>
+            <p class="italic">September 30, 2026</p>
+            <p><a href="../index.html">Home</a></p>
+
+            <p class="italic">placeholder</p>
+
+            <p>Deep learning is now the foundation of all machine learning and AI, making it more important than ever for us to obtain an intimate understanding of the empirical phenomena and experimental skills involved in deep neural networks. I make the claim that we should use deep learning to learn deep learning—in particular, reliably predicting the outcome of experiments leads to understanding<span class="footnote">Ilya Sutskever <a href="https://www.youtube.com/watch?v=YEUclZdj_Sc">famously said</a>, "Predicting the next token well means that you understand the underlying reality that led to the creation of that token."</span>. Understanding requires interaction and mastery, prediction forces you to build your own 'world model'.</p>
+
+            <p>In this blog, we will systematically tackle various aspects of training deep neural networks, pose questions, design experiments, and analyze the results. </p>
+
+            <p>Before I move on, I'm going to spend some time going over some background<span class="footnote">Throughout this blog, I focus on pre-training. This is because pre-training can be studied at small scales due to scaling laws, and is easier to reason about since all training starts from scratch.</span>. We are going to go over aspects of a pretty basic training stack. There are 4 main parts when specifying a deep learning algorithm: </p>
+            <ul>
+                <li><u>Data</u> specifies a distribution over inputs to the model (e.g. internet text)</li>
+                <li><u>Architecture</u> specifies how theta maps to a model prediction (e.g. transformer produces log likelihoods)</li>
+                <li><u>Objective</u> specifies error of theta via the loss function (e.g. cross-entropy loss on predicted likelihoods)</li>
+                <li><u>Optimization</u> specifies how the model should update itself based on its loss (e.g. gradient descent on cross-entropy loss)</li>
+            </ul>
+
+
+            <p>Our standard attention is </p>
+
+            <div class="equation" id="eq-attention">\[\text{Attention}(Q, K, V) = \text{softmax}(\frac{QK^\top}{\sqrt{d}})V.\]</div>
+
+            <p>Traditional linear attention methods seek to approximate the softmax kernel with another similarity measure, $\phi(x)$. By applying this feature map to $Q$ and $K$ respectively, we can define a new similarity score using their inner product:</p>
+
+            <div class="equation" id="eq-sim">\[\text{sim}(Q, K) = \langle\phi(Q), \phi(K)\rangle\]</div>
+
+            <p>Substituting this back into our orig </p>
+
+
+            <p>test<span class="footnote">This is an example footnote. Footnotes can hold brief asides or extra context without interrupting the main text.</span></p>
+
+            
+
+            <section class="references" aria-labelledby="references-heading"></section>
+        </article>
+    </div>
+
+    <script type="application/json" id="bibliography">
+    [
+      {
+        "key": "katharopoulos2020",
+        "authors": "Angelos Katharopoulos, Apoorv Vyas, Nikolaos Pappas, and François Fleuret",
+        "title": "Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention",
+        "url": "https://arxiv.org/abs/2006.16236",
+        "venue": "ICML 2020",
+        "note": "arXiv:2006.16236"
+      }
+    ]
+    </script>
+    <script src="../assets/js/citations.js"></script>
+    <script src="../assets/js/footnotes.js"></script>
+</body>
+
+</html>
