@@ -18,6 +18,11 @@
  *
  *   2. Cite inline with:
  *      <cite data-key="katharopoulos2020"></cite>
+ *      which renders as [1].
+ *
+ *      Several keys in one tag render in one bracket:
+ *      <cite data-key="yang2022, hoffmann2022"></cite>
+ *      which renders as [3, 4]. Each number still links to its own reference.
  *
  *   3. Place an empty references container where the list should appear:
  *      <section class="references" aria-labelledby="references-heading"></section>
@@ -147,17 +152,10 @@
         var numbers = Object.create(null);
         var occurrences = Object.create(null);
 
-        cites.forEach(function (cite) {
-            var key = cite.getAttribute("data-key");
-            if (!key) {
-                return;
-            }
-
+        function assign(key) {
             if (!bib[key]) {
                 console.warn("citations.js: unknown citation key", key);
-                cite.textContent = "[?]";
-                cite.classList.add("citation", "citation-missing");
-                return;
+                return null;
             }
 
             if (!numbers[key]) {
@@ -167,19 +165,73 @@
             }
 
             occurrences[key] += 1;
-            var num = numbers[key];
-            var occ = occurrences[key];
-            var citeId = "cite-" + num + "-" + occ;
+            return {
+                key: key,
+                num: numbers[key],
+                occ: occurrences[key],
+            };
+        }
 
-            // Promote <cite> to an <a> so citations remain navigable.
+        function linkFor(part) {
             var link = document.createElement("a");
-            link.className = "citation";
-            link.id = citeId;
-            link.setAttribute("href", "#ref-" + num);
-            link.setAttribute("aria-label", "See reference " + num);
-            link.setAttribute("data-key", key);
-            link.textContent = "[" + num + "]";
-            cite.replaceWith(link);
+            link.id = "cite-" + part.num + "-" + part.occ;
+            link.setAttribute("href", "#ref-" + part.num);
+            link.setAttribute("aria-label", "See reference " + part.num);
+            link.setAttribute("data-key", part.key);
+            link.textContent = String(part.num);
+            return link;
+        }
+
+        cites.forEach(function (cite) {
+            var keys = (cite.getAttribute("data-key") || "")
+                .split(",")
+                .map(function (key) {
+                    return key.trim();
+                })
+                .filter(Boolean);
+
+            if (!keys.length) {
+                return;
+            }
+
+            if (keys.length === 1) {
+                var single = assign(keys[0]);
+                if (!single) {
+                    cite.textContent = "[?]";
+                    cite.classList.add("citation", "citation-missing");
+                    return;
+                }
+
+                var singleLink = linkFor(single);
+                singleLink.className = "citation";
+                singleLink.textContent = "[" + single.num + "]";
+                cite.replaceWith(singleLink);
+                return;
+            }
+
+            var group = document.createElement("span");
+            group.className = "citation";
+            group.appendChild(document.createTextNode("["));
+
+            keys.forEach(function (key, index) {
+                if (index > 0) {
+                    group.appendChild(document.createTextNode(", "));
+                }
+
+                var part = assign(key);
+                if (!part) {
+                    var missing = document.createElement("span");
+                    missing.className = "citation-missing";
+                    missing.textContent = "?";
+                    group.appendChild(missing);
+                    return;
+                }
+
+                group.appendChild(linkFor(part));
+            });
+
+            group.appendChild(document.createTextNode("]"));
+            cite.replaceWith(group);
         });
 
         if (!order.length) {

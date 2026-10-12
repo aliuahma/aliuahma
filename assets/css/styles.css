@@ -9,6 +9,15 @@
     --link-hover: #666666;
     --serif: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Crimson Text", serif;
     --mono: "IBM Plex Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    --paper-mono: "Paper Mono", "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@font-face {
+    font-family: "Paper Mono";
+    src: url("../fonts/PaperMono-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
 }
 
 *,
@@ -47,17 +56,18 @@ body {
 .container {
     position: relative;
     z-index: 1;
-    width: min(83.125%, 1330px);
+    width: 100%;
     min-height: 100vh;
     margin: 0 auto;
-    padding: 5rem 0 6rem;
+    padding: 5rem 1.5rem 6rem;
 }
 
 .content,
 .content-centered,
 .content-blog-post {
-    width: 41.8%;
-    max-width: 578px;
+    /* Hold the reading measure. Side space shrinks until this no longer fits. */
+    width: 100%;
+    max-width: 556px;
     margin: 0 auto;
 }
 
@@ -200,13 +210,54 @@ em,
     font-style: italic;
 }
 
+.mono {
+    font-family: var(--paper-mono);
+    font-size: 0.92em;
+    font-style: normal;
+    font-weight: 400;
+    font-variant-numeric: lining-nums tabular-nums;
+}
+
 h1 + .italic,
-h2 + .italic {
-    margin-top: -0.35rem;
+h2 + .italic,
+.content-header + .italic {
     margin-bottom: 1.8rem;
     color: var(--muted);
     font-size: 1.2rem;
     line-height: 1.45;
+}
+
+h1 + .italic,
+h2 + .italic {
+    margin-top: -0.35rem;
+}
+
+.content-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.content-header h2 {
+    margin-bottom: 0;
+}
+
+.content-header a {
+    flex-shrink: 0;
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+.content-header + .italic {
+    margin-top: 0.85rem;
+}
+
+.content-header + .italic + img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0.4rem 0 0.2rem;
 }
 
 .with-space {
@@ -482,6 +533,11 @@ label.margin-toggle {
     white-space: nowrap;
 }
 
+.citation a {
+    font-size: inherit;
+    text-decoration: none;
+}
+
 .references {
     clear: both;
     margin-top: 4rem;
@@ -577,14 +633,7 @@ footer {
 
 @media (max-width: 855px) {
     .container {
-        width: 79.8%;
         padding-top: 4rem;
-    }
-
-    .content,
-    .content-centered,
-    .content-blog-post {
-        width: 54.72%;
     }
 
     .ascii-art-side {
@@ -596,14 +645,7 @@ footer {
     .container {
         width: 100%;
         min-height: auto;
-        padding: 3rem 8% 4rem;
-    }
-
-    .content,
-    .content-centered,
-    .content-blog-post {
-        width: 100%;
-        max-width: none;
+        padding: 3rem 1.5rem 4rem;
     }
 
     h1,

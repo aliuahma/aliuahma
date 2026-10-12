@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Understanding &mu;P | Ali Ahmad</title>
+
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="../../assets/favicon/apple-touch-icon.png">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap" async>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+            svg: { fontCache: "global" }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <article class="content-blog-post">
+            <h2>Understanding &mu;P</h2>
+            <p class="italic mono">October 08, 2026</p>
+            <p><a href="../../index.html">Home</a></p>
+
+            <p class="italic">placeholder</p>
+
+            <p>It is a well known fact that the cost of training LLMs is expensive, and as such, it is prohibitive to sweep hyperparameter configurations directly on large LLMs. A very natural idea is to carefully search for hyperparameters on a small model of the same architecture, and then </p>
+
+            <p>Maximal Update Parameterization (&mu;P) <cite data-key="yang2022tensorprogramsvtuning"></cite> has proven to be a powerful tool for the practice and study of scaling up neural networks <cite data-key="cerebras2024mupguide, everett2024scalingexponentsparameterizationsoptimizers, yang2024spectralconditionfeaturelearning, dey2026dontlazycompletepenables"></cite>. Despite this, &mu;P remains an elusive concept to grasp<span class="footnote">A sentiment shared by several experienced practitioners that I have spoken to.</span> due to its relative complexity. In this blog, I attempt to provide a clear and practical overview of &mu;P, in hopes that at least one more person may be able to appreciate its beauty and effectiveness. We will discuss the motivations for &mu;P, the mathematical framework, and its practical implementation.</p>
+
+            <p>There are perhaps two ways to motivate the idea of &mu;P: (1) it is desirable to be able to tune hyperparameters at a small scale and zero-shot transfer them to large scale, and (2) we want our theories of preventing activation explosion to persist in the infinite-width limit. You may consider the former to be an engineer's perspective, and the latter to be a physicist's perspective.</p>
+            
+
+            <section class="references" aria-labelledby="references-heading"></section>
+        </article>
+    </div>
+
+    <script type="application/json" id="bibliography">
+    [
+      {
+        "key": "yang2022tensorprogramsvtuning",
+        "title": "Tensor Programs V: Tuning Large Neural Networks via Zero-Shot Hyperparameter Transfer", 
+        "authors": "Greg Yang and Edward J. Hu and Igor Babuschkin and Szymon Sidor and Xiaodong Liu and David Farhi and Nick Ryder and Jakub Pachocki and Weizhu Chen and Jianfeng Gao",
+        "year": 2022,
+        "eprint": "2203.03466",
+        "archivePrefix": "arXiv",
+        "primaryClass": "cs.LG",
+        "url": "https://arxiv.org/abs/2203.03466"
+      },
+      {
+        "key": "dey2026dontlazycompletepenables",
+        "title": "Don't be lazy: CompleteP enables compute-efficient deep transformers", 
+        "authors": "Nolan Dey and Bin Claire Zhang and Lorenzo Noci and Mufan Li and Blake Bordelon and Shane Bergsma and Cengiz Pehlevan and Boris Hanin and Joel Hestness",
+        "year": 2026,
+        "eprint": "2505.01618",
+        "archivePrefix": "arXiv",
+        "primaryClass": "cs.LG",
+        "url": "https://arxiv.org/abs/2505.01618"
+      },
+      {
+        "key": "cerebras2024mupguide",
+        "title": "The practitioner's guide to the maximal update parameterization", 
+        "authors": "Nolan Dey and Quentin Anthony and Joel Hestness",
+        "year": 2024,
+        "url": "https://www.cerebras.ai/blog/the-practitioners-guide-to-the-maximal-update-parameterization"
+      },
+      {
+        "key": "everett2024scalingexponentsparameterizationsoptimizers",
+        "title": "Scaling Exponents Across Parameterizations and Optimizers", 
+        "authors": "Katie Everett and Lechao Xiao and Mitchell Wortsman and Alexander A. Alemi and Roman Novak and Peter J. Liu and Izzeddin Gur and Jascha Sohl-Dickstein and Leslie Pack Kaelbling and Jaehoon Lee and Jeffrey Pennington",
+        "year": 2024,
+        "eprint": "2407.05872",
+        "archivePrefix": "arXiv",
+        "primaryClass": "cs.LG",
+        "url": "https://arxiv.org/abs/2407.05872"
+      },
+      {
+        "key": "yang2024spectralconditionfeaturelearning",
+        "title": "A Spectral Condition for Feature Learning", 
+        "authors": "Greg Yang and James B. Simon and Jeremy Bernstein",
+        "year": 2024,
+        "eprint": "2310.17813",
+        "archivePrefix": "arXiv",
+        "primaryClass": "cs.LG",
+        "url": "https://arxiv.org/abs/2310.17813"
+      }
+    ]
+    </script>
+    <script src="../../assets/js/citations.js"></script>
+    <script src="../../assets/js/footnotes.js"></script>
+</body>
+
+</html>
