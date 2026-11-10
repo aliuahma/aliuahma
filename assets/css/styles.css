@@ -387,11 +387,23 @@ figcaption,
     line-height: 1.45;
 }
 
-/* Unnumbered display math. */
-.display-math {
+/*
+ * Display math and numbered equations.
+ * The box is at least the text column, grows with the formula, and is
+ * capped at the viewport. It is centered, so a wide formula overhangs
+ * both margins by the same amount. Past the viewport, only the scrollbar
+ * thumb shows.
+ *
+ * The equation number sits on the column's right edge while the formula
+ * fits. Once the formula is wider than the column, the number is part of
+ * that wider box and overhangs with it. A hidden copy of the number on
+ * the left keeps the formula itself centered.
+ */
+.display-math,
+.equation {
     width: max-content;
     min-width: 100%;
-    max-width: min(53.2vw, 760px);
+    max-width: calc(100vw - 3rem);
     margin: 0.75rem 0;
     margin-left: 50%;
     padding: 0;
@@ -399,52 +411,76 @@ figcaption,
     overflow-y: hidden;
     font-size: 1.5rem;
     line-height: 2rem;
-    scrollbar-width: thin;
     transform: translateX(-50%);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(26, 26, 26, 0.55) var(--paper);
 }
 
-/*
- * Numbered equations. Column-width shell so "(n)" sits on the text edge;
- * MathJax content inside can still overhang like .display-math.
- *
- *   <div class="equation" id="eq-attention">\[ ... \]</div>
- */
+.display-math::-webkit-scrollbar,
+.equation::-webkit-scrollbar {
+    height: 4px;
+    background: transparent;
+}
+
+.display-math::-webkit-scrollbar-track,
+.equation::-webkit-scrollbar-track,
+.display-math::-webkit-scrollbar-corner,
+.equation::-webkit-scrollbar-corner {
+    background: var(--paper);
+}
+
+.display-math::-webkit-scrollbar-thumb,
+.equation::-webkit-scrollbar-thumb {
+    background: rgba(26, 26, 26, 0.45);
+    border-radius: 999px;
+}
+
+.display-math {
+    display: flex;
+    justify-content: center;
+}
+
 .equation {
-    position: relative;
-    width: 100%;
-    margin: 0.75rem 0;
-    padding: 0;
-    overflow-x: visible;
-    overflow-y: visible;
-    font-size: 1.5rem;
-    line-height: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
     counter-increment: equation;
 }
 
+.equation::before,
 .equation::after {
-    position: absolute;
-    top: 50%;
-    right: 0;
+    display: flex;
+    flex: 1 0 auto;
+    align-items: center;
     color: var(--ink);
+    font-family: var(--serif);
     font-size: 1.15rem;
     font-style: normal;
+    font-weight: 400;
     font-variant-numeric: lining-nums tabular-nums;
     line-height: 1;
+    white-space: nowrap;
     content: "(" counter(equation) ")";
-    transform: translateY(-50%);
     pointer-events: none;
 }
 
+.equation::before {
+    justify-content: flex-start;
+    visibility: hidden;
+}
+
+.equation::after {
+    justify-content: flex-end;
+}
+
 .equation mjx-container {
+    flex: 0 0 auto;
     width: max-content;
     min-width: max-content;
-    max-width: min(53.2vw, 760px);
+    max-width: none;
     margin: 0 !important;
-    margin-left: 50% !important;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: thin;
-    transform: translateX(-50%);
+    overflow: visible;
+    transform: none;
 }
 
 /* Paragraph margins (1.4rem) otherwise win via collapse and hide any
@@ -698,21 +734,8 @@ footer {
 
     .display-math,
     .equation {
-        width: 100%;
-        min-width: 0;
-        max-width: 100%;
-        margin-left: 0;
         font-size: 1.3rem;
         line-height: 1.75rem;
-        transform: none;
-    }
-
-    .equation mjx-container {
-        width: 100%;
-        min-width: 0;
-        max-width: 100%;
-        margin-left: 0 !important;
-        transform: none;
     }
 
     .sidenote {

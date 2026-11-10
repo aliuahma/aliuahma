@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>From Parameter Symmetry to Effective Learning Rate | Ali Ahmad</title>
+
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="../../assets/favicon/apple-touch-icon.png">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap" async>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+            svg: { fontCache: "global" }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <article class="content-blog-post">
+            <h2>From Parameter Symmetry to Effective Learning Rate</h2>
+            <p class="italic mono">October 27, 2026</p>
+            <p class="italic">Su Jianlin</p>
+            <p><a href="../../translations/">Translations</a></p>
+
+            <p>Recently, an increasing number of papers and blog posts have begun analyzing and guiding model optimization based on parameter symmetry—for example, <a href="https://papers.cool/arxiv/2606.16899">Hyperball</a>, <a href="https://papers.cool/arxiv/2609.07017">HyperTransfer</a>, <a href="https://hy.tencent.com/research/elr">ELR</a>, etc. They all revolve around the symmetry assumption $\ell(\boldsymbol{w}) = \ell(c\boldsymbol{w})$. If we design optimizers to “conform” to the corresponding symmetry, training often becomes more robust and the mental burden of hyperparameter tuning is reduced.</p>
+
+            <p>However, the symmetry assumption itself is somewhat controversial. How can we find a more reliable foundation for this line of work so that it can proceed more reasonably and further? This article shares the author’s thoughts.</p>
+
+            <h3>Review of Results</h3>
+
+            <p>This section first organizes the logical thread of the three papers mentioned at the beginning.</p>
+
+            <p>First, they all share a core assumption: the model always satisfies $\ell(\boldsymbol{w}) = \ell(c\boldsymbol{w})$, where $\boldsymbol{w}$ is some parameter of the model, $c$ is any positive number, and $\ell$ is the loss function. Obviously, this assumption implies that the model’s performance is independent of the magnitude of $\boldsymbol{w}$. Therefore, <a href="https://papers.cool/arxiv/2606.16899">Hyperball</a> advocates renormalizing the magnitude of $\boldsymbol{w}$ to some value $\rho$ after each update step:</p>
+
+            <div class="equation">
+                \[\boldsymbol{w}_{t+1} = \boldsymbol{w}_t - \eta_t \boldsymbol{u}_t
+                \quad\to\quad
+                \boldsymbol{w}_{t+1} = \frac{\boldsymbol{w}_t - \eta_t \boldsymbol{u}_t}{\Vert \boldsymbol{w}_t - \eta_t \boldsymbol{u}_t \Vert_2} \times \rho\]
+            </div>
+
+            <p>The other two papers propose that we need not change the update rule, but since the model’s performance is independent of the magnitude, the rate of change of the direction vector $\tilde{\boldsymbol{w}} = \boldsymbol{w} / \Vert \boldsymbol{w} \Vert_2$ during training is more fundamental. Therefore, they advocate observing and aligning the AUS (Angular Update Size):</p>
+
+            <div class="equation">
+                \[\text{AUS} \triangleq \Vert \tilde{\boldsymbol{w}}_{t+1} - \tilde{\boldsymbol{w}}_t \Vert_2
+                \approx \frac{\eta_t \Vert \boldsymbol{u}_t - \tilde{\boldsymbol{w}}_t \tilde{\boldsymbol{w}}_t^{\top} \boldsymbol{u}_t \Vert_2}{\Vert \boldsymbol{w}_t \Vert_2}\]
+            </div>
+
+            <p>Furthermore, since $\ell(\boldsymbol{w}) = \ell(c\boldsymbol{w})$ holds universally, differentiating both sides with respect to $c$ and then setting $c=1$ yields $\boldsymbol{w}^{\top} \nabla_{\boldsymbol{w}} \ell = 0$, i.e., the gradient of $\boldsymbol{w}$ is always perpendicular to $\boldsymbol{w}$. Since the update $\boldsymbol{u}_t$ is constructed based on the gradient, one can simply approximate that this perpendicularity extends to the update, so $\tilde{\boldsymbol{w}}_t^{\top} \boldsymbol{u}_t \approx 0$, giving</p>
+
+            <div class="equation">
+                \[\text{AUS} \approx \frac{\eta_t \Vert \boldsymbol{u}_t \Vert_2}{\Vert \boldsymbol{w}_t \Vert_2}\]
+            </div>
+
+            <p>Compared to $\Vert \eta_t \boldsymbol{u}_t \Vert_2 = \eta_t \Vert \boldsymbol{u}_t \Vert_2$, the above expression has an extra division by $\Vert \boldsymbol{w}_t \Vert_2$. The meaning is the relative update magnitude, which is considered the more fundamental learning rate, called the “Effective Learning Rate (ELR).” Different optimizers can achieve similar performance by aligning it, and even learning-rate-related scaling laws should be based on it.</p>
+
+            <h3>Assumption Analysis</h3>
+
+            <p>However, the most fundamental problem with this whole framework is that, under current mainstream architectures, “$\ell(\boldsymbol{w}) = \ell(c\boldsymbol{w})$ holds universally” is an assumption that is almost completely invalid! Note that our current mainstream model architectures are all in Norm form—whether paired with conventional Residual or MHC, AttnRes, its every sub-layer is $f(\text{Norm}(X))$, where</p>
+
+            <div class="display-math">
+                \[f_{\text{attn}}(X) = \varphi(XW_q (XW_k)^{\top})(XW_v)W_o\]
+            </div>
+            <div class="display-math">
+                \[f_{\text{glu}}(X) = (XW_{\text{up}} \odot \psi(XW_{\text{gate}}))W_{\text{down}}\]
+            </div>
+
+            <p>Norm can only eliminate the influence of the input scale, but cannot eliminate the influence of the scale of this layer’s parameters, so $\ell(\boldsymbol{w}) = \ell(c\boldsymbol{w})$ has no basis. In fact, for mainstream Transformer architectures, almost no parameter satisfies this scaling invariance.</p>
+
+            <p>The only exception is models with QK-Norm, whose $W_q, W_k$ possess this property; in addition, since the input to the LM Head also has RMS Norm, multiplying the Embedding layer and the output matrices of all layers by the same number leaves the output unchanged. But these are, after all, sporadic and conditional invariances, not universally valid. Therefore, we say $\ell(\boldsymbol{w}) = \ell(c\boldsymbol{w})$ is a difficult-to-hold assumption, and it cannot even be said to hold approximately.</p>
+
+            <p>Another point worth noting is that even if the symmetry holds, the derivation from it to the Effective Learning Rate contains a very long chain of assumptions. In response to this, the author previously wrote <a href="https://papers.cool/arxiv/2607.22444">Hyperball May Not Be a Free Lunch</a>, which pointed out that the definition of ELR should explicitly retain the inner product term between the parameter and the update, rather than directly assuming orthogonality.</p>
+
+            <h3>Joint Symmetry</h3>
+
+            <p>Since a single parameter’s symmetry is not universal, can we find a more general symmetry? The answer is yes—joint symmetry.</p>
+
+            <p>For example, consider the QK-Norm case: $W_q$ and $W_k$ satisfy</p>
+
+            <div class="equation">
+                \[\ell(W_q, W_k) = \ell(c W_q, c^{-1} W_k)\]
+            </div>
+
+            <p>This is a joint scaling symmetry. Differentiating both sides with respect to $c$ and then setting $c=1$ gives</p>
+
+            <div class="equation">
+                \[0 = \boldsymbol{w}_1^{\top} \nabla_{\boldsymbol{w}_1} \ell - \boldsymbol{w}_2^{\top} \nabla_{\boldsymbol{w}_2} \ell
+                = [\boldsymbol{w}_1, -\boldsymbol{w}_2]^{\top} [\nabla_{\boldsymbol{w}_1} \ell, \nabla_{\boldsymbol{w}_2} \ell]\]
+            </div>
+
+            <p>This shows that, viewing $(\boldsymbol{w}_1, -\boldsymbol{w}_2)$ as a vector, it is always perpendicular to the gradient $(\nabla_{\boldsymbol{w}_1} \ell, \nabla_{\boldsymbol{w}_2} \ell)$. When there are enough joint symmetries (for example, $W_q$ is jointly symmetric with both $W_k$ and $\gamma$), we assume that this perpendicularity can be decomposed onto each individual vector, i.e.,</p>
+
+            <div class="equation">
+                \[[\boldsymbol{w}_1, -\boldsymbol{w}_2]^{\top} [\nabla_{\boldsymbol{w}_1} \ell, \nabla_{\boldsymbol{w}_2} \ell] = 0
+                \Rightarrow \boldsymbol{w}_1^{\top} \nabla_{\boldsymbol{w}_1} \ell \approx 0, \quad \boldsymbol{w}_2^{\top} \nabla_{\boldsymbol{w}_2} \ell \approx 0\]
+            </div>
+
+            <p>Thus the earlier analysis regarding AUS and ELR can be reproduced. Of course, this involves a long chain of assumptions—from global perpendicularity to local perpendicularity, and from gradient perpendicularity to update perpendicularity—which is not guaranteed to be accurate. Therefore, <a href="https://papers.cool/arxiv/2607.22444">Hyperball May Not Be a Free Lunch</a> explicitly retains the inner product term between the parameter and the update in the definition of the Effective Learning Rate, which is a more reasonable choice.</p>
+
+            <h3>Reflecting on the Derivation</h3>
+
+            <p>Looking back at the entire derivation chain, we were mainly trying to argue several points: that magnitude does not matter, that AUS is more fundamental, and that AUS is equivalent to ELR. But if we probe further, we find that the choice of these observed quantities—whether magnitude or AUS—is itself very subjective, and it does not explain what the more fundamental expectation behind this is.</p>
+
+            <p>We know that every symmetry represents an invariant property of the model—that is, for forward computation, the models before and after the transformation are two mathematically completely equivalent functions. For training, we expect two different but forward-equivalent parameterizations to obtain completely identical training trajectories, which would enhance the transferability of various hyperparameters and reduce the mental burden during training.</p>
+
+            <p>For example, suppose there is a model $\ell(\boldsymbol{w})$, and then introduce another model $\ell(c^{-1} \hat{\boldsymbol{w}})$, where $\hat{\boldsymbol{w}} = c \boldsymbol{w}$. Obviously these two models are completely equivalent, but under the same optimizer and the same hyperparameters, their training trajectories are often not equivalent. For instance, under SGD we have</p>
+
+            <div class="display-math">
+                \[\boldsymbol{w}_{t+1} = \boldsymbol{w}_t - \eta_t \nabla_{\boldsymbol{w}_t} \ell\]
+            </div>
+            <div class="display-math">
+                \[\hat{\boldsymbol{w}}_{t+1} = \hat{\boldsymbol{w}}_t - \eta_t \nabla_{\hat{\boldsymbol{w}}_t} \ell\]
+            </div>
+
+            <p>Even though $\hat{\boldsymbol{w}}_t = c \boldsymbol{w}_t$, the update amounts differ by a factor of $c$, so the trajectories diverge. This shows that the lack of symmetry in the optimizer is precisely the root of the non-transferability of hyperparameters.</p>
+
+            <p>The new perspective based on covariance is: we should design the optimizer so that it is <b>covariant</b> with respect to the symmetry transformation of the model. That is, if the model is transformed by a symmetry group, the optimizer’s update should transform accordingly, so that the training trajectory remains equivalent. This is a more principled guiding principle than “aligning AUS” or “aligning ELR.”</p>
+
+            <h3>ELR Schedule</h3>
+
+            <p>Under this covariant perspective, we can derive a reference form for the ELR schedule.</p>
+
+            <p>For simplicity, consider a linear decay schedule:</p>
+
+            <div class="display-math">
+                \[\eta_t = \eta_0 (1 - t/T)\]
+            </div>
+
+            <p>where the endpoint is assumed to be 0. Next, we mainly derive for Adam. In <a href="https://spaces.ac.cn/archives/11267">Why is Adam’s Update RMS 0.2?</a> and <a href="https://spaces.ac.cn/archives/11404">Asymptotic Estimation of AdamW’s Weight RMS (Part 2)</a>, we respectively derived</p>
+
+            <div class="display-math">
+                \[\Vert \boldsymbol{u}_t \Vert_{\text{RMS}} \approx \sqrt{\frac{1 - \beta_1}{1 + \beta_1}}\]
+            </div>
+            <div class="display-math">
+                \[\Vert \boldsymbol{w}_t \Vert_{\text{RMS}}^2 \approx e^{-\lambda \eta_0 t} \Vert \boldsymbol{w}_0 \Vert_{\text{RMS}}^2 + (1 - e^{-\lambda \eta_0 t}) \frac{\eta_0}{3 \lambda}\]
+            </div>
+
+            <p>where $\lambda$ is the Weight Decay. Thus a reference ELR schedule form is</p>
+
+            <div class="display-math">
+                \[\frac{\eta_t \Vert \boldsymbol{u}_t \Vert_{\text{RMS}}}{\Vert \boldsymbol{w}_t \Vert_{\text{RMS}}}
+                \propto \frac{\eta_0 (1 - t/T)}{\sqrt{e^{-\lambda \eta_0 t} \Vert \boldsymbol{w}_0 \Vert_{\text{RMS}}^2 + (1 - e^{-\lambda \eta_0 t}) \eta_0 / 3 \lambda}}
+                \propto \frac{1 - t/T}{\sqrt{1 - c_0 e^{-c_1 t}}}\]
+            </div>
+
+            <p>Since we generally use a relatively small initialization, i.e., $\Vert \boldsymbol{w}_0 \Vert_{\text{RMS}}^2 &lt; \eta_0 / 3 \lambda$ (corresponding to $c_0 &gt; 0$), the magnitude tends to increase during training. In this case, the above ELR curve is similar in shape to the reference ELR schedules given in articles such as <a href="https://hy.tencent.com/research/elr">From LR to ELR</a> and <a href="https://papers.cool/arxiv/2608.01284">Training nGPT</a>—all in the form of “higher starting point, faster decline in the early stage, and near-linear in the later stage.”</p>
+
+            <p>As for optimizers such as Muon, although the results are not completely identical to Adam, we generally believe they have similar asymptotic behavior, so the above results can generally be extended to Muon as well.</p>
+
+            <h3>Article Summary</h3>
+
+            <p>This article discusses parameter symmetry and effective learning rate, re-examines the common argument chain for effective learning rate, introduces a more rigorous joint symmetry to correct the original derivation, and finally supplements a new understanding perspective based on covariance.</p>
+        </article>
+    </div>
+</body>
+
+</html>

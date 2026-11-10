@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Higher-Order MuP: More Concise but More Brilliant Spectral Condition Scaling | Ali Ahmad</title>
+
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="../../assets/favicon/apple-touch-icon.png">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap" async>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+            svg: { fontCache: "global" }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <article class="content-blog-post">
+            <h2>Higher-Order MuP: More Concise but More Brilliant Spectral Condition Scaling</h2>
+            <p class="italic mono">March 24, 2025</p>
+            <p class="italic">Jianlin Su</p>
+            <p><a href="https://kexue.fm/archives/10795">Original</a> · <a href="../../translations/">Translations</a></p>
+
+            <p>In the article <em>A Preliminary Study of MuP: Transfer Laws of Hyperparameters across Model Scales</em>, we derived MuP (Maximal Update Parametrization) based on the scale invariance of forward propagation, backward propagation, loss increment, and feature changes. For some readers, this process may still seem somewhat cumbersome, but in fact it is already significantly simplified compared with the original paper. You should know that we introduced MuP relatively completely within a single article, whereas the MuP paper is actually the fifth paper in the author’s Tensor Programs series!</p>
+
+            <p>However, the good news is that in the follow-up research <em>A Spectral Condition for Feature Learning</em>, the authors discovered a new way of understanding (hereinafter referred to as the “spectral condition”). It is more intuitive and concise than both the original derivation of MuP and the author’s derivation, yet it can yield richer results than MuP. It can be called a higher-order version of MuP, a representative work that is concise without losing brilliance.</p>
+
+            <h3>Preliminaries</h3>
+
+            <p>As the name suggests, the spectral condition is related to the spectral norm. Its starting point is a basic inequality for the spectral norm:</p>
+
+            <div class="equation">
+                \[\|xW\|_2 \le \|x\|_2 \|W\|_2\]
+            </div>
+
+            <p>where $x \in \mathbb{R}^{d_{\mathrm{in}}}$, $W \in \mathbb{R}^{d_{\mathrm{in}} \times d_{\mathrm{out}}}$. As for $\|\cdot\|_2$, we can call it the “2-norm”. For $x$ and $xW$, both are vectors, and the 2-norm is the vector length; while $W$ is a matrix, and its 2-norm is also called the spectral norm, equal to the smallest constant $C$ such that $\|xW\|_2 \le C\|x\|_2$ holds for all $x$. In other words, the above inequality is actually a direct corollary of the definition of the spectral norm and requires no additional proof.</p>
+
+            <p>For more on the spectral norm, readers can also refer to blog posts such as <em>Lipschitz Constraints in Deep Learning: Generalization and Generative Models</em> and <em>The Road to Low-Rank Approximation (II): SVD</em>; we will not elaborate further here. Matrices also have a simpler F-norm, which is a simple generalization of the vector norm:</p>
+
+            <div class="equation">
+                \[\|W\|_F = \sqrt{\sum_{i=1}^{d_{\mathrm{in}}} \sum_{j=1}^{d_{\mathrm{out}}} W_{i,j}^2}\]
+            </div>
+
+            <p>From the perspective of singular values, the spectral norm equals the largest singular value of the matrix, and the F-norm equals the square root of the sum of squares of all singular values. Similarly, we can also define the “nuclear norm”, which equals the sum of all singular values:</p>
+
+            <div class="equation">
+                \[\|W\|_* = \sum_{i=1}^{\min(d_{\mathrm{in}}, d_{\mathrm{out}})} \sigma_i\]
+            </div>
+
+            <p>Matrix norms such as the spectral norm, F-norm, and nuclear norm that can be expressed in terms of singular values all belong to a type of “Schatten-$p$ norm”. Finally, let us define RMS (Root Mean Square), a variant of the vector norm:</p>
+
+            <div class="equation">
+                \[\|x\|_{\mathrm{RMS}} = \sqrt{\frac{1}{d_{\mathrm{in}}} \sum_{i=1}^{d_{\mathrm{in}}} x_i^2} = \frac{1}{\sqrt{d_{\mathrm{in}}}} \|x\|_2\]
+            </div>
+
+            <p>If generalized to matrices, it is</p>
+
+            <div class="display-math">
+                \[\|W\|_{\mathrm{RMS}} = \|W\|_F / \sqrt{d_{\mathrm{in}} d_{\mathrm{out}}}.\]
+            </div>
+
+            <p>Actually, it is easy to understand from the name: the vector norm or matrix F-norm can be called “Root Sum Square”, while RMS replaces Sum with Mean. It is mainly used as an average scale indicator for the elements of a vector or matrix. Now substituting RMS into inequality (1), we obtain</p>
+
+            <div class="equation">
+                \[\|xW\|_{\mathrm{RMS}} \le \sqrt{\frac{d_{\mathrm{in}}}{d_{\mathrm{out}}}} \|x\|_{\mathrm{RMS}} \|W\|_2.\]
+            </div>
+
+            <h3>Desired Properties</h3>
+
+            <p>Our previous approach to deriving MuP was to carefully analyze the forms of forward propagation, backward propagation, loss increment, and feature changes, and to achieve their scale invariance by adjusting initialization and learning rate. After the spectral condition “removes the chaff and keeps the essence”, it found that only two points—forward propagation and feature changes—are sufficient.</p>
+
+            <p>Simply put, the spectral condition expects the output and increment of each layer to both have scale invariance. How should we understand this statement? If we take each layer simply as $x_k = f(x_{k-1}; W_k)$, this statement can be translated as “it is desired that each $\|x_k\|_{\mathrm{RMS}}$ and $\|\Delta x_k\|_{\mathrm{RMS}}$ be $\Theta(1)$” (where $\Theta$ is “Big Theta Notation”):</p>
+
+            <ol>
+                <li>$\|x_k\|_{\mathrm{RMS}} = \Theta(1)$ is easy to understand; it represents the stability of forward propagation, and the derivation in the previous article also included this requirement.</li>
+                <li>$\Delta x_k$ represents the change in $x_k$ caused by parameter changes, so $\|\Delta x_k\|_{\mathrm{RMS}} = \Theta(1)$ incorporates the requirements of backward propagation and feature changes.</li>
+            </ol>
+
+            <p>Some readers may ask: shouldn’t there be at least a requirement on the “loss increment”? No, it is not needed. In fact, we can prove that if $\|x_k\|_{\mathrm{RMS}}$ and $\|\Delta x_k\|_{\mathrm{RMS}}$ are both $\Theta(1)$ for every layer, then $\Delta L$ is automatically $\Theta(1)$. This is exactly the first beautiful aspect of the spectral-condition idea: it reduces the four conditions originally needed to derive MuP to two, decreasing the number of analysis steps.</p>
+
+            <p>The proof is not difficult. The key here is that we assume $\|x_k\|_{\mathrm{RMS}} = \Theta(1)$ and $\|\Delta x_k\|_{\mathrm{RMS}} = \Theta(1)$ hold for every layer; then they naturally also hold for the last layer. Suppose the model has $K$ layers in total, and the per-sample loss function is $\ell$, so it is a function of $x_K$, i.e., $\ell(x_K)$. For simplicity, the label input is omitted here because it is not a variable for the following analysis.</p>
+
+            <p>By assumption, $\|x_K\|_{\mathrm{RMS}}$ is $\Theta(1)$, so $\ell(x_K)$ is naturally $\Theta(1)$. Also, since $\|\Delta x_K\|_{\mathrm{RMS}}$ is $\Theta(1)$,</p>
+
+            <div class="equation">
+                \[\|x_K + \Delta x_K\|_{\mathrm{RMS}} \le \|x_K\|_{\mathrm{RMS}} + \|\Delta x_K\|_{\mathrm{RMS}}\]
+            </div>
+
+            <p>is also $\Theta(1)$, and therefore $\ell(x_K + \Delta x_K)$ is $\Theta(1)$. Thus,</p>
+
+            <div class="equation">
+                \[\Delta \ell = \ell(x_K + \Delta x_K) - \ell(x_K) = \Theta(1).\]
+            </div>
+
+            <p>Therefore, the loss increment $\Delta \ell$ for a single sample is $\Theta(1)$, and $\Delta L$ is the average of all $\Delta \ell$, so it is also $\Theta(1)$. In this way, we have proved that $\|x_k\|_{\mathrm{RMS}} = \Theta(1)$ and $\|\Delta x_k\|_{\mathrm{RMS}} = \Theta(1)$ automatically imply $\Delta L = \Theta(1)$. To put it plainly, the principle is that $\Delta L$ is a function of the last-layer output and its increment; once they are stable, $\Delta L$ is naturally stable.</p>
+
+            <h3>Spectral Condition</h3>
+
+            <p>Next, let us see how the two desired properties are satisfied. Since neural networks are dominated by matrix multiplication, we first consider the simplest linear layer</p>
+
+            <div class="display-math">
+                \[x_k = x_{k-1} W_k, \qquad W_k \in \mathbb{R}^{d_{k-1} \times d_k}.\]
+            </div>
+
+            <p>To satisfy the condition $\|x_k\|_{\mathrm{RMS}} = \Theta(1)$, the spectral condition does not, like traditional initialization analysis, assume independent and identically distributed variables and then compute expected variances, etc. Instead, it directly applies inequality (5):</p>
+
+            <div class="display-math">
+                \[\|x_k\|_{\mathrm{RMS}} \le \sqrt{\frac{d_{k-1}}{d_k}} \|x_{k-1}\|_{\mathrm{RMS}} \|W_k\|_2.\]
+            </div>
+
+            <p>Note that this inequality can attain equality, and in a sense it is the most precise. Therefore, if the input $\|x_{k-1}\|_{\mathrm{RMS}}$ is already $\Theta(1)$, then in order to make the output $\|x_k\|_{\mathrm{RMS}} = \Theta(1)$, we must have</p>
+
+            <div class="equation">
+                \[\sqrt{\frac{d_{k-1}}{d_k}} \|W_k\|_2 = \Theta(1) \quad\Rightarrow\quad \|W_k\|_2 = \Theta\left(\sqrt{\frac{d_k}{d_{k-1}}}\right).\]
+            </div>
+
+            <p>This gives the first spectral condition—the requirement on the spectral norm of $W_k$. It is independent of initialization and distributional assumptions and is entirely the result of analysis and algebra. This is what the author considers the second beautiful aspect of the spectral condition—it simplifies the analysis process. Of course, the basic material on the spectral norm has been omitted here; if added, the whole length might not be shorter than the analysis under distributional assumptions, but distributional assumptions ultimately appear more limited and are not as flexible as the algebraic framework here.</p>
+
+            <p>After analyzing $\|x_k\|_{\mathrm{RMS}}$, it is the turn of $\|\Delta x_k\|_{\mathrm{RMS}}$. The increment $\Delta x_k$ has two sources: first, the parameter changes from $W_k$ to $W_k + \Delta W_k$; second, the parameter changes in the input $x_{k-1}$ cause it to change from $x_{k-1}$ to $x_{k-1} + \Delta x_{k-1}$. Therefore,</p>
+
+            <div class="equation">
+                \[\begin{aligned}
+                \Delta x_k
+                &amp;= (x_{k-1} + \Delta x_{k-1})(W_k + \Delta W_k) - x_{k-1} W_k \\
+                &amp;= x_{k-1}(\Delta W_k) + (\Delta x_{k-1}) W_k + (\Delta x_{k-1})(\Delta W_k).
+                \end{aligned}\]
+            </div>
+
+            <p>So</p>
+
+            <div class="equation">
+                \[\begin{aligned}
+                \|\Delta x_k\|_{\mathrm{RMS}}
+                &amp;= \|x_{k-1}(\Delta W_k) + (\Delta x_{k-1}) W_k + (\Delta x_{k-1})(\Delta W_k)\|_{\mathrm{RMS}} \\
+                &amp;\le \|x_{k-1}(\Delta W_k)\|_{\mathrm{RMS}} + \|(\Delta x_{k-1}) W_k\|_{\mathrm{RMS}} + \|(\Delta x_{k-1})(\Delta W_k)\|_{\mathrm{RMS}} \\
+                &amp;\le \sqrt{\frac{d_{k-1}}{d_k}} \Big( \|x_{k-1}\|_{\mathrm{RMS}} \|\Delta W_k\|_2 + \|\Delta x_{k-1}\|_{\mathrm{RMS}} \|W_k\|_2 + \|\Delta x_{k-1}\|_{\mathrm{RMS}} \|\Delta W_k\|_2 \Big).
+                \end{aligned}\]
+            </div>
+
+            <p>Let us analyze term by term:</p>
+
+            <div class="equation">
+                \[\underbrace{\|x_{k-1}\|_{\mathrm{RMS}}}_{\Theta(1)} \|\Delta W_k\|_2 + \underbrace{\|\Delta x_{k-1}\|_{\mathrm{RMS}}}_{\Theta(1)} \underbrace{\|W_k\|_2}_{\Theta(\sqrt{d_k / d_{k-1}})} + \underbrace{\|\Delta x_{k-1}\|_{\mathrm{RMS}}}_{\Theta(1)} \|\Delta W_k\|_2.\]
+            </div>
+
+            <p>It can be seen that, to have $\|\Delta x_k\|_{\mathrm{RMS}} = \Theta(1)$, we need</p>
+
+            <div class="equation">
+                \[\|\Delta W_k\|_2 = \Theta\left(\sqrt{\frac{d_k}{d_{k-1}}}\right).\]
+            </div>
+
+            <p>This is the second spectral condition—the requirement on the spectral norm of $\Delta W_k$.</p>
+
+            <p>The above analysis did not consider nonlinearity. In fact, as long as the activation function is element-wise and its derivative can be bounded by some constant (common activation functions such as ReLU, Sigmoid, and Tanh all satisfy this), the result remains consistent even when nonlinear activation functions are considered. This is what the previous article’s analysis called “the influence of the activation function is scale-independent”. If readers are still not convinced, they can derive it themselves.</p>
+
+            <h3>Spectral Normalization</h3>
+
+            <p>Now we have two spectral conditions, (8) and (12). Next we need to see how to design the model itself and the model optimization so that these two conditions are satisfied.</p>
+
+            <p>Note that both $W_k$ and $\Delta W_k$ are matrices. The standard way to make a matrix satisfy a spectral-norm condition is usually spectral normalization (SN), and this case is no exception. First, we want the initialized $W_k$ to satisfy</p>
+
+            <div class="display-math">
+                \[\|W_k\|_2 = \Theta\left(\sqrt{\frac{d_k}{d_{k-1}}}\right).\]
+            </div>
+
+            <p>This can be achieved by choosing an arbitrary initialization matrix $W'_k$ and then applying spectral normalization:</p>
+
+            <div class="equation">
+                \[W_k = \sigma \sqrt{\frac{d_k}{d_{k-1}}} \frac{W'_k}{\|W'_k\|_2}.\]
+            </div>
+
+            <p>Here $\sigma &gt; 0$ is a scale-independent constant. Similarly, for the update $\Phi_k$ produced by any optimizer, we can reconstruct $\Delta W_k$ by spectral normalization:</p>
+
+            <div class="equation">
+                \[\Delta W_k = \eta \sqrt{\frac{d_k}{d_{k-1}}} \frac{\Phi_k}{\|\Phi_k\|_2},\]
+            </div>
+
+            <p>where $\eta &gt; 0$ is also a scale-independent constant (the learning rate). In this way, at every step we have</p>
+
+            <div class="display-math">
+                \[\|\Delta W_k\|_2 = \Theta\left(\sqrt{\frac{d_k}{d_{k-1}}}\right).\]
+            </div>
+
+            <p>Since the spectral norms of both the initialization and every update satisfy $\Theta(\sqrt{d_k / d_{k-1}})$, $\|W_k\|_2$ also satisfies $\Theta(\sqrt{d_k / d_{k-1}})$ from beginning to end. Thus the two spectral conditions are satisfied.</p>
+
+            <p>At this point, readers may wonder: by considering only the stability of initialization and increments, can we really guarantee the stability of $W_k$? Is it not possible for $\|W_k\|_{\mathrm{RMS}} \to \infty$ to occur? The answer is that it is possible. The $\Theta(\sqrt{d_k / d_{k-1}})$ here emphasizes the relationship with the model scale (currently mainly width). It does not rule out the possibility of training collapse caused by improper settings of other hyperparameters. What it wants to express is that, after setting things up in this way, even if collapse occurs, the cause is unrelated to scale changes.</p>
+
+            <h3>Singular Value Clipping</h3>
+
+            <p>To satisfy the spectral-norm conditions, in addition to the standard method of spectral normalization, we can also consider singular value clipping (hereinafter referred to as “SVC”). This part is supplemented by the author and does not appear in the original paper, but it can explain some interesting results.</p>
+
+            <p>From the perspective of singular values, spectral normalization scales the largest singular value to 1 and scales the remaining singular values accordingly. Singular value clipping is, from a certain angle, more relaxed: it only sets singular values greater than 1 to 1, without changing singular values that are originally less than or equal to 1:</p>
+
+            <div class="equation">
+                \[\operatorname{SVC}(W) = U \min(\Lambda, 1) V^\top, \qquad U, \Lambda, V^\top = \operatorname{SVD}(W).\]
+            </div>
+
+            <p>For comparison, spectral normalization is</p>
+
+            <div class="equation">
+                \[\operatorname{SN}(W) = U (\Lambda / \max(\Lambda)) V^\top.\]
+            </div>
+
+            <p>Replacing spectral normalization with singular value clipping, we obtain</p>
+
+            <div class="equation">
+                \[W_k = \sigma \sqrt{\frac{d_k}{d_{k-1}}} \operatorname{SVC}(W'_k), \qquad \Delta W_k = \eta \sqrt{\frac{d_k}{d_{k-1}}} \operatorname{SVC}(\Phi_k).\]
+            </div>
+
+            <p>The disadvantage of singular value clipping is that it guarantees the spectral norm after clipping to be equal to 1 only when at least one singular value is greater than or equal to 1. If this is not satisfied, we can consider multiplying by a $\lambda &gt; 0$ and then clipping, i.e., changing to $\operatorname{SVC}(\lambda W)$. However, different scaling factors will produce different results, and it is not easy for us to determine a suitable scaling factor. Nevertheless, we can consider a limiting version:</p>
+
+            <div class="equation">
+                \[\lim_{\lambda \to \infty} \operatorname{SVC}(\lambda W) = \operatorname{msign}(W).\]
+            </div>
+
+            <p>Here $\operatorname{msign}$ is the matrix version of the sign function, msign, in Muon (see <em>Muon Optimizer Review: The Essential Leap from Vectors to Matrices</em>). Replacing spectral normalization or singular value clipping with msign, we obtain</p>
+
+            <div class="display-math">
+                \[\Delta W_k = \eta \sqrt{\frac{d_k}{d_{k-1}}} \operatorname{msign}(\Phi_k).\]
+            </div>
+
+            <p>In this way, we actually obtain a generalized Muon optimizer. Standard Muon applies msign to the momentum, whereas this allows us to apply msign to the update produced by any off-the-shelf optimizer. Coincidentally, some time ago someone on Twitter actually conducted an experiment applying msign to the Adam update (they called it “Mudamw”) and found that the effect was slightly better than Muon.</p>
+
+            <p>After seeing this, we also tried it on small models and found that similar conclusions could indeed be reproduced! So perhaps applying msign to existing optimizers may give a chance of obtaining better results. The feasibility of this operation is difficult to explain within the original Muon framework, but here we interpret it as performing singular value clipping (its limiting version) on the update, and this result is naturally obtained.</p>
+
+            <h3>Approximate Estimation</h3>
+
+            <p>It is generally believed that operations related to SVD (singular value decomposition), such as spectral normalization, singular value clipping, or msign, are relatively expensive, so we still hope to find simpler forms. Since our goal is only to seek scaling laws across model scales, further simplification is indeed possible.</p>
+
+            <p>(Note: In fact, our Moonlight work shows that, as long as it is implemented well, even if msign is performed at every update step, the added cost is very limited. Therefore, the content of this section, as it currently appears, is more for exploring explicit scaling laws than for saving computational cost.)</p>
+
+            <p>First, it is still initialization. Initialization is actually one-time, so a somewhat larger computational cost is not a problem; therefore, the previous scheme of first randomly initializing and then applying spectral normalization/singular value clipping/msign can be retained. If one still wants to strive for perfection, one can use a statistical result: for a $d_{k-1} \times d_k$ matrix sampled independently and repeatedly from the standard normal distribution, its largest singular value is approximately</p>
+
+            <div class="display-math">
+                \[\sqrt{d_{k-1}} + \sqrt{d_k}.\]
+            </div>
+
+            <p>This is equivalent to saying that as long as the sampling standard deviation is changed to</p>
+
+            <div class="equation">
+                \[\sigma_k = \Theta\left( \sqrt{\frac{d_k}{d_{k-1}}} \left(\sqrt{d_{k-1}} + \sqrt{d_k}\right)^{-1} \right) = \Theta\left( \sqrt{ \frac{1}{d_{k-1}} \min\left(1, \frac{d_k}{d_{k-1}}\right) } \right),\]
+            </div>
+
+            <p>the requirement</p>
+
+            <div class="display-math">
+                \[\|W_k\|_2 = \Theta\left(\sqrt{\frac{d_k}{d_{k-1}}}\right)\]
+            </div>
+
+            <p>can be satisfied at the initialization stage. As for the proof of this statistical result, readers can refer to materials such as <em>High-Dimensional Probability</em> and the Marchenko–Pastur law; we will not elaborate here.</p>
+
+            <p>Next, let us examine the update, which is a bit more troublesome, because the spectral norm of an arbitrary update $\Phi_k$ is not so easy to estimate. Here we need to use an empirical conclusion: the gradient matrices of parameters are usually low-rank. Here “low-rank” does not necessarily mean strictly low-rank in the mathematical sense; rather, it means that the largest few singular values (the number is independent of model scale) are significantly larger than the remaining singular values, making low-rank approximation usable. This is also the theoretical basis of various LoRA optimizations.</p>
+
+            <p>A direct corollary of this empirical assumption is the approximate equivalence between the spectral norm and the nuclear norm. Since the spectral norm is the largest singular value and the nuclear norm is the sum of all singular values, under the above assumption the nuclear norm is approximately equal to the sum of the largest several singular values, so the two are at least of the same order, i.e.,</p>
+
+            <div class="equation">
+                \[\Theta\left(\|\nabla_{W_k} L\|_2\right) = \Theta\left(\|\nabla_{W_k} L\|_*\right).\]
+            </div>
+
+            <p>Next we use the relationship between $\Delta L$ and $\Delta W_k$:</p>
+
+            <div class="equation">
+                \[\Delta L \approx \sum_k \langle \Delta W_k, \nabla_{W_k} L \rangle_F \le \sum_k \|\Delta W_k\|_2 \|\nabla_{W_k} L\|_*.\]
+            </div>
+
+            <p>Here $\langle \cdot, \cdot \rangle_F$ is the Frobenius inner product, i.e., the inner product computed after flattening the matrices into vectors. The inequality holds because of a classical inequality for matrix norms,</p>
+
+            <div class="display-math">
+                \[\langle A, B \rangle_F \le \|A\|_2 \|B\|_*,\]
+            </div>
+
+            <p>analogous to Hölder’s inequality. In fact, this is exactly what we proved when deriving Muon in <em>Muon Optimizer Review: The Essential Leap from Vectors to Matrices</em>. Based on the above and combined with the low-rank assumption on gradients, we have</p>
+
+            <div class="display-math">
+                \[\Delta L \sim \sum_k \Theta\left(\|\Delta W_k\|_2 \|\nabla_{W_k} L\|_*\right) \sim \sum_k \Theta\left(\|\Delta W_k\|_2 \|\nabla_{W_k} L\|_2\right).\]
+            </div>
+
+            <p>Do not forget that we proved earlier that, under the two spectral conditions, $\Delta L = \Theta(1)$ necessarily holds. Now, combining this with the above equation, we obtain that when</p>
+
+            <div class="display-math">
+                \[\|\Delta W_k\|_2 = \Theta\left(\sqrt{\frac{d_k}{d_{k-1}}}\right),\]
+            </div>
+
+            <p>we have</p>
+
+            <div class="equation">
+                \[\|\nabla_{W_k} L\|_2 = \Theta\left(\sqrt{\frac{d_{k-1}}{d_k}}\right).\]
+            </div>
+
+            <p>This is an important estimation result for the order of magnitude of gradients. It is derived directly from the two spectral conditions, avoiding explicit gradient computation. This is the third beautiful aspect of the spectral condition: it allows us to obtain the relevant estimate without computing the gradient expression via the chain rule.</p>
+
+            <h3>Learning Rate Strategy</h3>
+
+            <p>Applying estimate (22) to SGD, i.e.,</p>
+
+            <div class="display-math">
+                \[\Delta W_k = -\eta_k \nabla_{W_k} L,\]
+            </div>
+
+            <p>according to equation (22) we have</p>
+
+            <div class="display-math">
+                \[\|\nabla_{W_k} L\|_2 = \Theta\left(\sqrt{\frac{d_{k-1}}{d_k}}\right).\]
+            </div>
+
+            <p>To achieve the goal</p>
+
+            <div class="display-math">
+                \[\|\Delta W_k\|_2 = \Theta\left(\sqrt{\frac{d_k}{d_{k-1}}}\right),\]
+            </div>
+
+            <p>we need</p>
+
+            <div class="equation">
+                \[\eta_k = \Theta\left(\frac{d_k}{d_{k-1}}\right).\]
+            </div>
+
+            <p>As for Adam, we still use SignSGD to approximate</p>
+
+            <div class="display-math">
+                \[\Delta W_k = -\eta_k \operatorname{sign}(\nabla_{W_k} L).\]
+            </div>
+
+            <p>Since sign is generally $\pm 1$,</p>
+
+            <div class="display-math">
+                \[\|\operatorname{sign}(\nabla_{W_k} L)\|_F = \Theta\left(\sqrt{d_{k-1} d_k}\right).\]
+            </div>
+
+            <p>Moreover, an element-wise operation like sign generally does not have any special rank-increasing effect, so we consider $\operatorname{sign}(\nabla_{W_k} L)$ to be low-rank just like $\nabla_{W_k} L$. Thus, similar to the nuclear norm, the F-norm and the spectral norm will be of the same order, i.e.,</p>
+
+            <div class="display-math">
+                \[\|\operatorname{sign}(\nabla_{W_k} L)\|_2 = \Theta\left(\sqrt{d_{k-1} d_k}\right).\]
+            </div>
+
+            <p>Therefore, to achieve the goal</p>
+
+            <div class="display-math">
+                \[\|\Delta W_k\|_2 = \Theta\left(\sqrt{\frac{d_k}{d_{k-1}}}\right),\]
+            </div>
+
+            <p>we need</p>
+
+            <div class="equation">
+                \[\eta_k = \Theta\left(\frac{1}{d_{k-1}}\right).\]
+            </div>
+
+            <p>Now we can compare the results of the spectral condition with MuP. MuP assumes that we want to build a model</p>
+
+            <div class="display-math">
+                \[\mathbb{R}^{d_{\mathrm{in}}} \mapsto \mathbb{R}^{d_{\mathrm{out}}}.\]
+            </div>
+
+            <p>It divides the model into three parts: first, a $d_{\mathrm{in}} \times d$ matrix projects the input into $d$ dimensions; then modeling is carried out in the $d$-dimensional space, where the parameters are all $d \times d$ square matrices; finally, a $d \times d_{\mathrm{out}}$ matrix produces a $d_{\mathrm{out}}$-dimensional output. Correspondingly, MuP’s conclusions are also divided into input, middle, and output parts.</p>
+
+            <p>For initialization, MuP’s input variance is $1/d_{\mathrm{in}}$, output variance is $1/d^2$, and the variance of the remaining parameters is $1/d$, whereas the spectral-condition result has only one formula, (19). But if we look carefully, we will find that equation (19) already includes MuP’s three cases: let the sizes of the input, middle, and output matrices be $d_{\mathrm{in}} \times d$, $d \times d$, and $d \times d_{\mathrm{out}}$, respectively. Substituting into equation (19), we obtain</p>
+
+            <div class="display-math">
+                \[\begin{aligned}
+                \sigma_{\mathrm{in}}^2
+                &amp;= \Theta\left(\frac{1}{d_{\mathrm{in}}} \min\left(1, \frac{d}{d_{\mathrm{in}}}\right)\right)
+                = \Theta\left(\frac{1}{d_{\mathrm{in}}}\right), \\[4pt]
+                \sigma_k^2
+                &amp;= \Theta\left(\frac{1}{d} \min\left(1, \frac{d}{d}\right)\right)
+                = \Theta\left(\frac{1}{d}\right), \\[4pt]
+                \sigma_{\mathrm{out}}^2
+                &amp;= \Theta\left(\frac{1}{d} \min\left(1, \frac{d_{\mathrm{out}}}{d}\right)\right)
+                = \Theta\left(\frac{1}{d^2}\right)
+                \qquad (d \to \infty).
+                \end{aligned}\]
+            </div>
+
+            <p>Some readers may wonder why we consider only $d \to \infty$. Because $d_{\mathrm{in}}$ and $d_{\mathrm{out}}$ are task-dependent numbers and are equivalent to constants; the only variable model scale is $d$. MuP studies the asymptotic laws of hyperparameters with respect to model scale, so it always refers to the simplified laws when $d$ is sufficiently large.</p>
+
+            <p>For learning rates, for SGD, MuP’s input learning rate is $d$, output learning rate is $1/d$, and the learning rate for the remaining parameters is $1$. Note that these relations are proportional rather than equal. The spectral-condition result (23) likewise includes these three cases. Similarly, for Adam, MuP’s input learning rate is $1$, output learning rate is $1/d$, and the learning rate for the remaining parameters is $1/d$; the spectral condition still describes these three cases with the single formula (24).</p>
+
+            <p>Therefore, the spectral condition obtains a more concise result in a (in the author’s view) simpler way, and the actual meaning of this more concise result is richer than MuP, because its result does not make overly strong assumptions about model architecture or parameter shapes. Hence, the author calls the spectral condition a higher-order version of MuP.</p>
+
+            <h3>Summary</h3>
+
+            <p>This article introduced an upgraded version of MuP—the spectral condition. It starts from inequalities related to the spectral norm to analyze the conditions for stable model training and obtains richer results than MuP in a more convenient way.</p>
+
+            <div class="display-math">
+                \[\begin{cases}
+                \text{Desired properties:}
+                \begin{cases}
+                \|x_k\|_{\mathrm{RMS}} = \Theta(1) \\
+                \|\Delta x_k\|_{\mathrm{RMS}} = \Theta(1)
+                \end{cases} \\[6pt]
+                \text{Spectral conditions:}
+                \begin{cases}
+                \|W_k\|_2 = \Theta\left(\sqrt{\dfrac{d_k}{d_{k-1}}}\right) \\
+                \|\Delta W_k\|_2 = \Theta\left(\sqrt{\dfrac{d_k}{d_{k-1}}}\right)
+                \end{cases} \\[6pt]
+                \text{Implementation:}
+                \begin{cases}
+                \text{Spectral normalization:}
+                \begin{cases}
+                W_k = \sigma \sqrt{\dfrac{d_k}{d_{k-1}}} \dfrac{W'_k}{\|W'_k\|_2} \\
+                \Delta W_k = \eta \sqrt{\dfrac{d_k}{d_{k-1}}} \dfrac{\Phi_k}{\|\Phi_k\|_2}
+                \end{cases} \\[6pt]
+                \text{Singular value clipping:}
+                \begin{cases}
+                W_k = \sigma \sqrt{\dfrac{d_k}{d_{k-1}}} \operatorname{SVC}(W'_k) \xrightarrow{\text{limit}} \sigma \sqrt{\dfrac{d_k}{d_{k-1}}} \operatorname{msign}(W'_k) \\
+                \Delta W_k = \eta \sqrt{\dfrac{d_k}{d_{k-1}}} \operatorname{SVC}(\Phi_k) \xrightarrow{\text{limit}} \eta \sqrt{\dfrac{d_k}{d_{k-1}}} \operatorname{msign}(\Phi_k)
+                \end{cases}
+                \end{cases} \\[6pt]
+                \text{Approximate estimation:}
+                \begin{cases}
+                \sigma_k = \Theta\left(\sqrt{\dfrac{1}{d_{k-1}} \min\left(1, \dfrac{d_k}{d_{k-1}}\right)}\right) \\
+                \eta_k =
+                \begin{cases}
+                \text{SGD: } \Theta\left(\dfrac{d_k}{d_{k-1}}\right) \\
+                \text{Adam: } \Theta\left(\dfrac{1}{d_{k-1}}\right)
+                \end{cases}
+                \end{cases}
+                \end{cases}\]
+            </div>
+        </article>
+    </div>
+</body>
+
+</html>
