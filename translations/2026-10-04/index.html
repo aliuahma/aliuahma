@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slow is Fast: 2. Is Adam's End Still Muon? | Ali Ahmad</title>
+
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="../../assets/favicon/apple-touch-icon.png">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap" async>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+            svg: { fontCache: "global" }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <article class="content-blog-post">
+            <h2>Slow is Fast: 2. Is Adam's End Still Muon?</h2>
+            <p class="italic mono">October 4, 2026</p>
+            <p class="italic">Su Jianlin</p>
+            <p><a href="https://kexue.fm/archives/11964">Original</a> · <a href="../../translations/">Translations</a></p>
+
+            <p>In the previous article, <a href="../2026-09-28/"><em>Slow is Fast: 1. Is Shampoo's End Muon?</em></a>, we started from the average convergence conclusion of convex optimization, established the “orthogonal slowest descent” framework, and used it to improve arbitrary Kronecker-product-form preconditioned optimizers. We found that under this framework, these optimizers all show a tendency toward Muon, leading to the pessimistic lament that “Shampoo's end is Muon.”</p>
+
+            <p>Besides Kronecker products, another simpler structured approximation of the preconditioning matrix is diagonal approximation, with common examples being RMSProp, Adam, etc. Note that although diagonal approximation is computationally simpler than Kronecker products, the two do not have an inclusion relationship, so a new question arises: will applying orthogonal slowest descent to this class of optimizers yield new results?</p>
+
+            <h3>Objective Analysis</h3>
+
+            <p>Following the notation of the previous article, the gradient is $\boldsymbol{G} \in \mathbb{R}^{n \times m}$, $\boldsymbol{g} = \operatorname{vec}(\boldsymbol{G}) \in \mathbb{R}^{nm}$. Introduce a matrix $\boldsymbol{N} \in \mathbb{R}_+^{n \times m}$. The so-called diagonal approximation means that, in vectorized form, the preconditioning matrix is a diagonal matrix, i.e., $\boldsymbol{H}^{-1} = \operatorname{diag}(\operatorname{vec}(\boldsymbol{N}))$, so that</p>
+
+            <div class="equation">
+                \[\boldsymbol{H}^{-1} \boldsymbol{g} = \operatorname{vec}(\boldsymbol{N} \odot \boldsymbol{G})\]
+            </div>
+
+            <p>or equivalently, the update rule is $\boldsymbol{W} - \eta \boldsymbol{N} \odot \boldsymbol{G}$, where $\odot$ denotes the Hadamard product. Our task is to introduce a Kronecker-product-form orthogonal transformation to $\boldsymbol{N}$, so that under the principle of orthogonal slowest descent it becomes a better optimizer.</p>
+
+            <p>Specifically, we introduce orthogonal matrices $\boldsymbol{X} \in \mathbb{R}^{n \times n}, \boldsymbol{Y} \in \mathbb{R}^{m \times m}$, set $\boldsymbol{O} = \boldsymbol{Y} \otimes \boldsymbol{X}$, and replace the diagonal preconditioning matrix with $\boldsymbol{O}^{\top} \operatorname{diag}(\operatorname{vec}(\boldsymbol{N})) \boldsymbol{O}$, i.e., the update amount changes from $\boldsymbol{N} \odot \boldsymbol{G}$ to $\boldsymbol{X}^{\top} (\boldsymbol{N} \odot \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top}) \boldsymbol{Y}$. This transformation requires a bit of Kronecker product background, which we will not elaborate on here.</p>
+
+            <p>Intuitively, this means finding a new set of orthogonal bases for $\boldsymbol{G}$, performing diagonal preconditioning on them, and then transforming back. According to the principle of orthogonal slowest descent, we need to minimize its inner product with $\boldsymbol{G}$, i.e.,</p>
+
+            <div class="equation">
+                \[\min_{\boldsymbol{X}, \boldsymbol{Y}} \operatorname{tr}(\boldsymbol{G}^{\top} \boldsymbol{X}^{\top} (\boldsymbol{N} \odot \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top}) \boldsymbol{Y}) \qquad \text{s.t.} \qquad \boldsymbol{X}^{\top} \boldsymbol{X} = \boldsymbol{I}_n, \quad \boldsymbol{Y}^{\top} \boldsymbol{Y} = \boldsymbol{I}_m\]
+            </div>
+
+            <h3>Unified Form</h3>
+
+            <p>Note that</p>
+
+            <div class="equation">
+                \[\operatorname{tr}(\boldsymbol{G}^{\top} \boldsymbol{X}^{\top} (\boldsymbol{N} \odot \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top}) \boldsymbol{Y}) = \operatorname{tr}(\boldsymbol{Y} \boldsymbol{G}^{\top} \boldsymbol{X}^{\top} (\boldsymbol{N} \odot \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top})) = \|\boldsymbol{N}^{\odot/2} \odot \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top}\|_F^2\]
+            </div>
+
+            <p>where $\boldsymbol{N}^{\odot/2}$ denotes the element-wise square root under the Hadamard product. Furthermore, in the previous article we solved</p>
+
+            <div class="equation">
+                \[\min_{\boldsymbol{X}, \boldsymbol{Y}} \operatorname{tr}(\boldsymbol{G}^{\top} \boldsymbol{X}^{\top} \boldsymbol{P} \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top} \boldsymbol{Q} \boldsymbol{Y}) \qquad \text{s.t.} \qquad \boldsymbol{X}^{\top} \boldsymbol{X} = \boldsymbol{I}_n, \quad \boldsymbol{Y}^{\top} \boldsymbol{Y} = \boldsymbol{I}_m\]
+            </div>
+
+            <p>whose objective can be rewritten as</p>
+
+            <div class="equation">
+                \[\operatorname{tr}(\boldsymbol{G}^{\top} \boldsymbol{X}^{\top} \boldsymbol{P} \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top} \boldsymbol{Q} \boldsymbol{Y}) = \operatorname{tr}(\boldsymbol{Y} \boldsymbol{G}^{\top} \boldsymbol{X}^{\top} \boldsymbol{P} \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top} \boldsymbol{Q}) = \|\boldsymbol{P}^{1/2} \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top} \boldsymbol{Q}^{1/2}\|_F^2\]
+            </div>
+
+            <p>We can see that both objectives have the form $f(\boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top})$, so next we consider the general problem</p>
+
+            <div class="equation">
+                \[\min_{\boldsymbol{X}, \boldsymbol{Y}} f(\boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top}) \qquad \text{s.t.} \qquad \boldsymbol{X}^{\top} \boldsymbol{X} = \boldsymbol{I}_n, \quad \boldsymbol{Y}^{\top} \boldsymbol{Y} = \boldsymbol{I}_m\]
+            </div>
+
+            <h3>Stationary Point Conditions</h3>
+
+            <p>First, we derive the stationary point conditions for the above problem. To this end, we introduce Lagrange multipliers $\boldsymbol{A} \in \mathbb{R}^{n \times n}, \boldsymbol{B} \in \mathbb{R}^{m \times m}$, and define the auxiliary function</p>
+
+            <div class="equation">
+                \[F = f(\boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top}) - \operatorname{tr}(\boldsymbol{A}^{\top} (\boldsymbol{X}^{\top} \boldsymbol{X} - \boldsymbol{I}_n)) - \operatorname{tr}(\boldsymbol{B}^{\top} (\boldsymbol{Y}^{\top} \boldsymbol{Y} - \boldsymbol{I}_m))\]
+            </div>
+
+            <p>Let $\boldsymbol{Z} = \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top}$, $\boldsymbol{K} = \nabla_{\boldsymbol{Z}} f(\boldsymbol{Z})$. Taking the gradients of $F$ with respect to $\boldsymbol{X}, \boldsymbol{Y}$ and setting them to zero gives</p>
+
+            <div class="equation">
+                \[\begin{aligned}
+                \nabla_{\boldsymbol{X}} F &amp;= \boldsymbol{K} \boldsymbol{Y} \boldsymbol{G}^{\top} - \boldsymbol{X}(\boldsymbol{A} + \boldsymbol{A}^{\top}) = \boldsymbol{0} \\
+                \nabla_{\boldsymbol{Y}} F &amp;= \boldsymbol{K}^{\top} \boldsymbol{X} \boldsymbol{G} - \boldsymbol{Y}(\boldsymbol{B} + \boldsymbol{B}^{\top}) = \boldsymbol{0}
+                \end{aligned}\]
+            </div>
+
+            <p>Multiplying the first equation on the left by $\boldsymbol{X}^{\top}$, the second on the left by $\boldsymbol{Y}^{\top}$, and using the orthogonality of $\boldsymbol{X}, \boldsymbol{Y}$, we obtain the stationary point conditions</p>
+
+            <div class="equation">
+                \[\boldsymbol{X}^{\top} \boldsymbol{K} \boldsymbol{Y} \boldsymbol{G}^{\top} \text{ is symmetric}, \qquad \boldsymbol{G}^{\top} \boldsymbol{X}^{\top} \boldsymbol{K} \boldsymbol{Y} \text{ is symmetric}\]
+            </div>
+
+            <p>In the previous article, we already proved that this implies $\boldsymbol{X}^{\top} \boldsymbol{K} \boldsymbol{Y}$ has the form $\boldsymbol{U} \boldsymbol{D} \boldsymbol{V}^{\top}$, where $\boldsymbol{U} \boldsymbol{\Sigma} \boldsymbol{V}^{\top}$ is the SVD of $\boldsymbol{G}$, and $\boldsymbol{D}$ is a diagonal matrix. This is a common feature of the optimal solutions to the above optimization problems, independent of the specific choice of $f$, and can be considered a very strong conclusion.</p>
+
+            <h3>Washing Away the Basis</h3>
+
+            <p>Let us first use the results here to go through the objective $\|\boldsymbol{P}^{1/2} \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top} \boldsymbol{Q}^{1/2}\|_F^2$ from the previous article. At this point $\boldsymbol{K} = 2 \boldsymbol{P} \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top} \boldsymbol{Q}$, and the update amount we care about is $\boldsymbol{\Phi} = \boldsymbol{X}^{\top} \boldsymbol{P} \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top} \boldsymbol{Q} \boldsymbol{Y} = \boldsymbol{X}^{\top} \boldsymbol{K} \boldsymbol{Y} / 2$. According to the results of the previous section, $\boldsymbol{\Phi}$ has the form $\boldsymbol{U} \boldsymbol{D} \boldsymbol{V}^{\top}$, i.e., the eigenvector matrices of $\boldsymbol{P}, \boldsymbol{Q}$ are completely eliminated.</p>
+
+            <p>To the author's great surprise, the same conclusion can also be extended to the protagonist of this article—i.e., the objective $\|\boldsymbol{N}^{\odot/2} \odot \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top}\|_F^2$. At this point $\boldsymbol{K} = 2 \boldsymbol{N} \odot \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top}$, and the update amount we care about is $\boldsymbol{\Phi} = \boldsymbol{X}^{\top} (\boldsymbol{N} \odot \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top}) \boldsymbol{Y} = \boldsymbol{X}^{\top} \boldsymbol{K} \boldsymbol{Y} / 2$. Then, again according to the stationary point conditions, $\boldsymbol{\Phi}$ has the form $\boldsymbol{U} \boldsymbol{D} \boldsymbol{V}^{\top}$.</p>
+
+            <p>In other words, whether it is Kronecker product or diagonal approximation, the “basis” of the preconditioning matrix will be washed away by orthogonal slowest descent: the left and right singular matrices of the update amount always degenerate to the left and right singular matrices of the gradient (or momentum), and the preconditioning can change at most the singular values—exactly the same as Muon's construction. This is the first meaning of the title “the end is Muon.”</p>
+
+            <h3>Can They Be Equalized?</h3>
+
+            <p>If we can prove that the diagonal entries of $\boldsymbol{D}$ tend toward equilibrium, then it would be even more similar to Muon. This is the second meaning of “the end is Muon.”</p>
+
+            <p>In the previous article, we already gave a detailed argument for the Kronecker product case, but that process is not easy to generalize, so here we use a heuristic method to perceive the properties of $\boldsymbol{D}$. Without loss of generality, assume $n \ge m$. We have</p>
+
+            <div class="equation">
+                \[\operatorname{tr}(\boldsymbol{G}^{\top} \boldsymbol{\Phi}) = \operatorname{tr}(\boldsymbol{V} \boldsymbol{\Sigma}^{\top} \boldsymbol{D} \boldsymbol{V}^{\top}) = \operatorname{tr}(\boldsymbol{\Sigma}^{\top} \boldsymbol{D}) = \sum_{i=1}^{m} \sigma_i d_i \ge m \left( \prod_{i=1}^{m} \sigma_i d_i \right)^{1/m} = m \left( \prod_{i=1}^{m} \sigma_i \prod_{i=1}^{m} d_i \right)^{1/m}\]
+            </div>
+
+            <p>where $\boldsymbol{\Sigma} = \operatorname{diag}(\sigma_1, \sigma_2, \cdots)$, $\boldsymbol{D} = \operatorname{diag}(d_1, d_2, \cdots)$, and equality holds when $d_i \propto \sigma_i^{-1}$. This result shows that as long as the product of the singular values of $\boldsymbol{\Phi}$ is constant, the ideal minimum of $\operatorname{tr}(\boldsymbol{G}^{\top} \boldsymbol{\Phi})$ is attained at $\boldsymbol{D} \propto \boldsymbol{\Sigma}^{-1}$ (taking the inverse of the diagonal entries, with the shape unchanged).</p>
+
+            <p>Of course, since we can only change the orthogonal matrices in $\boldsymbol{\Phi}$, this ideal minimum is difficult to achieve. We can only guess that it is an intermediate result between the most ideal ($\boldsymbol{D} \propto \boldsymbol{\Sigma}^{-1}$) and the worst ($\boldsymbol{D} \propto \boldsymbol{\Sigma}$), and their geometric mean is precisely $\boldsymbol{D} \propto \boldsymbol{I}$, i.e., equalization of singular values.</p>
+
+            <h3>Product of Spectra</h3>
+
+            <p>So is the product of the singular values of $\boldsymbol{\Phi}$ constant? We discuss this separately in the order of first Kronecker product, then diagonal approximation. First, for the “Kronecker product + square matrix” case, it is indeed constant:</p>
+
+            <div class="equation">
+                \[\prod_{i=1}^{m} d_i = |\det(\boldsymbol{\Phi})| = |\det(\boldsymbol{X}^{\top} \boldsymbol{P} \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top} \boldsymbol{Q} \boldsymbol{Y})| = |\det(\boldsymbol{P}) \det(\boldsymbol{G}) \det(\boldsymbol{Q})|\]
+            </div>
+
+            <p>That is, the absolute value of the determinant of $\boldsymbol{\Phi}$ remains unchanged under the transformations of orthogonal matrices $\boldsymbol{X}, \boldsymbol{Y}$, so the product of singular values is unchanged, and the conclusion of the previous section is applicable. However, for non-square matrices, the above identity no longer holds. For this, we have two options: one is to discuss it carefully following the method of the previous article, and the other is to assume without proof that the above formula <strong>approximately</strong> holds for non-square matrices as well.</p>
+
+            <p>What is more troublesome is the diagonal approximation case: although the Hadamard product is simple, it is not an essential matrix operation, and its introduction makes various matrix analyses extremely difficult. Therefore, regardless of whether the matrix is square or not, we cannot make an effective estimate of the singular values/determinant of $\boldsymbol{\Phi} = \boldsymbol{X}^{\top} (\boldsymbol{N} \odot \boldsymbol{X} \boldsymbol{G} \boldsymbol{Y}^{\top}) \boldsymbol{Y}$.</p>
+
+            <p>However, since only the orthogonal matrices in $\boldsymbol{\Phi}$ can vary, and orthogonal transformations often do not change the determinant, we guess that “the determinant of $\boldsymbol{\Phi}$ will not change significantly either,” thereby obtaining that $\boldsymbol{D}$ also has a tendency toward equalization. Note that this guess is very “weak”: it certainly does not hold identically, and the degree of approximation cannot be judged either. It is more our “faith” regarding determinants and orthogonal matrices.</p>
+
+            <h3>Article Summary</h3>
+
+            <p>This article extends “orthogonal slowest descent” to diagonal preconditioning (the RMSProp, Adam family). By extracting the common abstract form of the two objectives, we uniformly obtain the conclusion that “whether it is Kronecker product or diagonal approximation, the original basis will be eliminated by orthogonal slowest descent, and at most the singular value spectrum of the gradient or momentum will be changed.” Furthermore, we briefly discussed whether the singular values tend toward equilibrium.</p>
+        </article>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Do We Prefer Isotropy? An Understanding Based on Steepest Descent | Ali Ahmad</title>
+
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="../../assets/favicon/apple-touch-icon.png">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap" async>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+            svg: { fontCache: "global" }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <article class="content-blog-post">
+            <h2>Why Do We Prefer Isotropy? An Understanding Based on Steepest Descent</h2>
+            <p class="italic mono">January 20, 2026</p>
+            <p class="italic">Su Jianlin</p>
+            <p><a href="https://kexue.fm/archives/11549">Original</a> · <a href="../../translations/">Translations</a></p>
+
+            <p>From data whitening preprocessing in the machine learning era to the various Normalization methods in the deep learning era—BatchNorm, InstanceNorm, LayerNorm, RMSNorm, and so on—they all essentially reflect our preference for “Isotropy.” Why do we tend toward isotropic features? What practical benefits does it offer? Many answers can be found for this question—aligning scales, reducing redundancy, decorrelation, and so forth—but most are rather superficial impressions. Recently, while reading the paper <a href="https://papers.cool/arxiv/2512.22247"><em>The Affine Divergence: Aligning Activation Updates Beyond Normalisation</em></a>, the author gained a new understanding of this problem from an optimization perspective. Personally, I consider it relatively close to the essence, so I am writing it out to share and discuss with everyone.</p>
+
+            <h3>Steepest Descent</h3>
+
+            <p>We start from the simplest linear layer:</p>
+
+            <div class="equation">
+                \[\boldsymbol{Y} = \boldsymbol{X}\boldsymbol{W}\]
+            </div>
+
+            <p>where $\boldsymbol{X} \in \mathbb{R}^{b \times d_{\mathrm{in}}}$ is the input to the current layer, $\boldsymbol{W} \in \mathbb{R}^{d_{\mathrm{in}} \times d_{\mathrm{out}}}$ is the weight, and $\boldsymbol{Y} \in \mathbb{R}^{b \times d_{\mathrm{out}}}$ is the output. The loss function is denoted $\mathcal{L}(\boldsymbol{Y}) = \mathcal{L}(\boldsymbol{X}\boldsymbol{W})$, so we have</p>
+
+            <div class="equation">
+                \[\frac{\partial \mathcal{L}}{\partial \boldsymbol{W}} = \boldsymbol{X}^{\top} \frac{\partial \mathcal{L}}{\partial \boldsymbol{Y}}\]
+            </div>
+
+            <p>Taking gradient descent as an example, the update rule is</p>
+
+            <div class="equation">
+                \[\boldsymbol{W} \quad\leftarrow\quad \boldsymbol{W} - \eta \frac{\partial \mathcal{L}}{\partial \boldsymbol{W}} = \boldsymbol{W} - \eta \boldsymbol{X}^{\top} \frac{\partial \mathcal{L}}{\partial \boldsymbol{Y}}\]
+            </div>
+
+            <p>The basic principle of gradient descent—the well-known “the negative gradient direction is the direction of fastest loss decrease”—has a precondition. The most critical precondition is that the metric it chooses is the Euclidean norm. If we switch to a different norm, the steepest direction changes accordingly, as discussed in <a href="https://kexue.fm/archives/10739"><em>Muon Sequel: Why Did We Choose to Try Muon?</em></a>, <a href="https://kexue.fm/archives/11196"><em>Steepest Descent on Manifolds: 1. SGD + Hypersphere</em></a>, and other articles.</p>
+
+            <h3>Switching Perspectives</h3>
+
+            <p>This article focuses on another precondition that is less easily noticed: the perspective, or standpoint.</p>
+
+            <p>Suppose we agree that “the negative gradient direction is the direction of fastest loss decrease.” Then the question is: the gradient of <em>what</em>? Some readers might say, naturally the gradient of the parameters—this is indeed the standard answer, but not necessarily the best one. Parameters are essentially a byproduct of the model; we do not actually care about how the parameters are, but about whether the model’s input-output mapping constitutes the desired mapping.</p>
+
+            <p>Therefore, the feature changes of the input and output are what we care more about. If we start from the perspective of features, the conclusion will be different. Specifically, when the parameter changes from $\boldsymbol{W}$ to $\boldsymbol{W} - \eta \boldsymbol{X}^{\top} \frac{\partial \mathcal{L}}{\partial \boldsymbol{Y}}$, the change in the output feature $\boldsymbol{Y}$ is</p>
+
+            <div class="equation">
+                \[\Delta \boldsymbol{Y} = \boldsymbol{X}\left(\boldsymbol{W} - \eta \boldsymbol{X}^{\top} \frac{\partial \mathcal{L}}{\partial \boldsymbol{Y}}\right) - \boldsymbol{X}\boldsymbol{W} = -\eta \boldsymbol{X} \boldsymbol{X}^{\top} \frac{\partial \mathcal{L}}{\partial \boldsymbol{Y}}\]
+            </div>
+
+            <p>According to “the negative gradient direction is the direction of fastest loss decrease,” from the standpoint of $\boldsymbol{Y}$, for the change in $\boldsymbol{Y}$ to make the loss decrease fastest, we should have $\Delta \boldsymbol{Y} \propto -\frac{\partial \mathcal{L}}{\partial \boldsymbol{Y}}$. But now there is an extra Gram matrix $\boldsymbol{X} \boldsymbol{X}^{\top}$, which means it is not moving along the direction of fastest decrease.</p>
+
+            <h3>Isotropy</h3>
+
+            <p>At this point, the role of isotropy becomes apparent. If the input features satisfy isotropy—that is, the covariance matrix $\boldsymbol{X}^{\top} \boldsymbol{X}$ (or more precisely $\mathbb{E}[\boldsymbol{X}^{\top} \boldsymbol{X}]$) is proportional to the identity matrix—then the Gram matrix $\boldsymbol{X} \boldsymbol{X}^{\top}$ is also proportional to the identity matrix (when the batch size equals the feature dimension, or in expectation). In that case,</p>
+
+            <div class="display-math">
+                \[\Delta \boldsymbol{Y} = -\eta \boldsymbol{X} \boldsymbol{X}^{\top} \frac{\partial \mathcal{L}}{\partial \boldsymbol{Y}} \propto -\frac{\partial \mathcal{L}}{\partial \boldsymbol{Y}}\]
+            </div>
+
+            <p>and the update on the features precisely follows the steepest descent direction. This is the essential reason why we prefer isotropy: <strong>isotropy makes parameter-space gradient descent equivalent to feature-space steepest descent</strong>.</p>
+
+            <p>In other words, when the input features are isotropic, the parameter update direction chosen by gradient descent coincides with the direction that makes the output features decrease fastest. This is precisely the condition for the steepest descent property to hold at the feature level. Normalization methods such as BatchNorm and LayerNorm are essentially striving to make the features approximately isotropic, thereby bringing the optimization process closer to true steepest descent at the feature level.</p>
+
+            <h3>Summary</h3>
+
+            <p>This article, inspired by the paper “The Affine Divergence,” provides an explanation for the preference for isotropy from the perspective of steepest descent: isotropy ensures that gradient descent in parameter space corresponds to steepest descent in feature space. When features are isotropic, the Gram matrix degenerates to a scalar multiple of the identity, and the extra term in the feature update disappears, allowing the update to follow the negative feature gradient directly. This offers a relatively essential optimization-theoretic understanding of why normalization and whitening are so widely used.</p>
+        </article>
+    </div>
+</body>
+
+</html>

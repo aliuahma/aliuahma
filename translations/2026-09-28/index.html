@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slow is Fast: 1. Is Muon the End of Shampoo? | Ali Ahmad</title>
+
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="../../assets/favicon/apple-touch-icon.png">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap" async>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+            svg: { fontCache: "global" }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <article class="content-blog-post">
+            <h2>Slow is Fast: 1. Is Muon the End of Shampoo?</h2>
+            <p class="italic mono">September 28, 2026</p>
+            <p class="italic">Su Jianlin</p>
+            <p><a href="https://kexue.fm/archives/11917">Original</a> · <a href="../../translations/">Translations</a></p>
+
+            <p>As is well known, the Muon optimizer has been popular for quite some time now. While it may not have completely replaced Adam, it has become a competitive optimizer that cannot be ignored. At the same time, the Shampoo family of optimizers has been “unwilling to fall behind” over the past two years. In addition to the original Shampoo, variants such as KL-Shampoo, OKLS, PSGD, and SOAP have emerged, all claiming to achieve better results than Muon.</p>
+
+            <p>However, this article will pour a bucket of cold water on this: for all Shampoo-like preconditioned optimizers based on the Kronecker product, their ideal limit may be Muon—the preconditioning matrices we pay a high price to compute may all be “useless work”.</p>
+
+            <h3>Average Convergence</h3>
+
+            <p>We start from the average convergence conclusion obtained in <em>Making Alchemy More Scientific (Part 10): Splitting and Patching the Monotonicity Assumption</em>: under the convexity assumption, the update rule $\theta_{t+1} = \theta_t - \eta_t H_t^{-1} g_t$ satisfies the following inequality:</p>
+
+            <div class="equation">
+                \[\frac{\sum_{t=1}^{T} \eta_t \mathbb{E}[L(\theta_t) - L(\theta^*)]}{\sum_{t=1}^{T} \eta_t} \le \mathbb{E}\left[ \frac{R^2 \Lambda_T}{2 \sum_{t=1}^{T} \eta_t} + \frac{\sum_{t=1}^{T} \eta_t^2 \|g_t\|_{H_t^{-1}}^2}{2 \sum_{t=1}^{T} \eta_t} \right]\]
+            </div>
+
+            <p>where $\Lambda_T \triangleq \lambda_{\max}(H_1) + \sum_{t=2}^{T} [\lambda_{\max}(H_t - H_{t-1})]_+$. The meanings of the other symbols will not be expanded here; please refer to the original article. Intuitively, this convergence upper bound is divided into two terms: the first term represents how fast the descent is, and the second term represents how severe the oscillation is during convergence. In actual training, we need to choose appropriate $\eta_t$ and $H_t$ to balance the two terms and make them as small as possible.</p>
+
+            <p>That is, we assume: by minimizing the convergence upper bound, we can obtain a better optimizer. We have precedents for this approach: the article <em>Making Alchemy More Scientific (Part 9): Classical Adaptive Gradient Algorithms</em>, based on the assumptions $H_t \succeq H_{t-1}$ and constant $\eta_t$, replaced $\Lambda_T$ with its upper bound $\operatorname{tr}(H_T)$, and then minimized the upper bound to obtain $H^* = (\sum_{t=1}^{T} g_t g_t^\top)^{1/2}$, thereby deriving the AdaGrad optimizer.</p>
+
+            <p>This assumption is also the core starting point that runs through the derivation of this article.</p>
+
+            <h3>Slowest Descent</h3>
+
+            <p>Now let us change perspective: suppose there is a ready-made, fixed matrix $H_t$, and we transform it into $O_t^\top H_t O_t$, where $O_t$ is an orthogonal matrix. We hope to choose an appropriate $O_t$ so that</p>
+
+            <div class="equation">
+                \[\theta_{t+1} = \theta_t - \eta_t (O_t^\top H_t O_t)^{-1} g_t\]
+            </div>
+
+            <p>becomes a better optimizer. How do we judge whether it is good? According to the viewpoint of the previous section, we hope it can lower the convergence upper bound. Note that orthogonal transformations do not change eigenvalues, so $\lambda_{\max}(O_1^\top H_1 O_1) = \lambda_{\max}(H_1)$. Then, assuming $O_t$ varies slowly with $t$, we have</p>
+
+            <div class="equation">
+                \[\begin{aligned}
+                \lambda_{\max}(O_t^\top H_t O_t - O_{t-1}^\top H_{t-1} O_{t-1})
+                &amp;\approx \lambda_{\max}(O_t^\top H_t O_t - O_t^\top H_{t-1} O_t) \\
+                &amp;= \lambda_{\max}(H_t - H_{t-1})
+                \end{aligned}\]
+            </div>
+
+            <p>In this way, $\Lambda_T$ is approximately invariant under the replacement $H_t \to O_t^\top H_t O_t$. Therefore, if we only want to optimize $O_t$, the objective function reduces to only the second term:</p>
+
+            <div class="equation">
+                \[\frac{\sum_{t=1}^{T} \eta_t^2 \|g_t\|_{(O_t^\top H_t O_t)^{-1}}^2}{\sum_{t=1}^{T} \eta_t}\]
+            </div>
+
+            <p>Since the $O_t$ corresponding to each $t$ can be different, we can completely minimize $\|g_t\|_{(O_t^\top H_t O_t)^{-1}}^2$ pointwise, which can be written as</p>
+
+            <div class="equation">
+                \[\min_{O_t} \langle g_t, (O_t^\top H_t O_t)^{-1} g_t \rangle \quad \text{s.t.} \quad O_t^\top O_t = I\]
+            </div>
+
+            <p>where $\varphi_t = (O_t^\top H_t O_t)^{-1} g_t$ is the optimizer’s update direction. We know that $L(\theta - \eta_t \varphi_t) \approx L(\theta) - \eta_t \langle g_t, \varphi_t \rangle$, so another meaning of the above equation is to minimize the amount of loss decrease at each step under the first-order approximation—that is, slowest descent.</p>
+
+            <h3>The Debate Between Fast and Slow</h3>
+
+            <p>Readers who have read <em>Muon Sequel: Why Did We Choose to Try Muon?</em>, <em>Steepest Descent on Manifolds: 1. SGD + Hypersphere</em>, <em>Above MuP: 2. Linear Layers and Steepest Descent</em>, and other articles should know that many optimizers are derived based on the principle of steepest descent (i.e., fastest descent). So now there is also slowest descent—do these two conflict?</p>
+
+            <p>In fact, this precisely represents two completely different viewpoints on optimizers. Steepest descent is a first-order approximate, local greedy solution, hoping that taking the optimum at each step will yield a globally better solution; it represents an optimistic assumption. Minimizing the convergence upper bound, on the other hand, represents a global, pessimistic assumption, hoping that even in the worst case, we can still achieve some convergence property.</p>
+
+            <p>The reason the latter just happens to take the counterintuitive form of slowest descent is that here we restrict the optimization space to orthogonal transformations, and the first term of the convergence upper bound is approximately negligible, leaving only the second term, whose meaning is slowest descent. This also reminds us that not all optimization spaces can consider slowest descent; this is merely a special case under the orthogonal space, and the feasibility of other cases needs to be analyzed specifically.</p>
+
+            <p>At this point, the role of slowest descent is to make the optimization trajectory smoother while ensuring descent, so that a larger learning rate can be used, or under the same learning rate, progress can be made faster and more accurately. In the language of steepest descent, assumptions about stability must be incorporated into the constraints on the update amount (for example, Muon chooses the spectral norm).</p>
+
+            <p>Furthermore, for stochastic optimization scenarios, this term is also related to noise—decomposing $g_t$ into “true value + random noise” will produce a variance term in $\mathbb{E}[\|g_t\|_{H_t^{-1}}^2]$—so slowest descent also means reducing the impact of noise on the optimization process, thereby making optimization more accurate.</p>
+
+            <h3>Matrix Optimization</h3>
+
+            <p>The previous sections discussed general principles. Now we formally combine them with matrix optimization for the derivation. Consider a matrix parameter $W \in \mathbb{R}^{n \times m}$, whose gradient is $G$, and whose flattened vector is $g = \operatorname{vec}(G) \in \mathbb{R}^{nm}$. At this point $H$ is an $nm \times nm$ matrix, which is rather cumbersome to think about.</p>
+
+            <p>For the matrix scenario, we consider preconditioning matrices that can be expressed as Kronecker products, but here we do not intend to introduce the language of Kronecker products. Instead, we understand it directly from the perspective of linear operators—that is, directly interpret $H^{-1} g$ as</p>
+
+            <div class="equation">
+                \[H^{-1} g = \operatorname{vec}(P G Q)\]
+            </div>
+
+            <p>That is, the optimizer’s update rule is $W - \eta P G Q$ (written with the Kronecker product, $H^{-1} = Q \otimes P$), where $P \in \mathbb{R}^{n \times n}$ and $Q \in \mathbb{R}^{m \times m}$ are two positive semi-definite preconditioning matrices. $P$ and $Q$ can be related to the current gradient or even historical gradients, so this can cover Muon and various Shampoo variants (without momentum).</p>
+
+            <p>Now, fixing matrices $P, G, Q$, we hope to choose appropriate orthogonal matrices $X \in \mathbb{R}^{n \times n}$ and $Y \in \mathbb{R}^{m \times m}$ so that the new update amount $X^\top P X G Y^\top Q Y$ becomes a better optimizer (written with the Kronecker product, $O = Y \otimes X$). The guiding principle is precisely the “orthogonal slowest descent” discussed in the previous sections, namely</p>
+
+            <div class="equation">
+                \[\min_{X,Y} \operatorname{tr}(G^\top X^\top P X G Y^\top Q Y) \quad \text{s.t.} \quad X^\top X = I_n, \; Y^\top Y = I_m\]
+            </div>
+
+            <h3>Preliminary Solution</h3>
+
+            <p>The complete problem is slightly complex. For simplicity, let us first solve the special case $Q = I_m$ to get a feel for it. In this case, the problem simplifies to</p>
+
+            <div class="equation">
+                \[\min_{X} \operatorname{tr}(G^\top X^\top P X G) \quad \text{s.t.} \quad X^\top X = I_n\]
+            </div>
+
+            <p>Note that $\operatorname{tr}(G^\top X^\top P X G) = \operatorname{tr}(G G^\top X^\top P X)$, so this is exactly the von Neumann trace inequality problem we derived in <em>Sorting Inequalities and Their Generalizations</em>. Its minimum value is</p>
+
+            <div class="equation">
+                \[\sum_{i=1}^{n} \lambda_i(G G^\top) \lambda_{n+1-i}(P)\]
+            </div>
+
+            <p>where $\lambda_i(\cdot)$ denotes the $i$-th largest eigenvalue of the corresponding matrix. Let the SVD of $G$ be $U \Sigma V^\top$ (complete form, i.e., $U$ and $V$ are orthogonal square matrices, with singular values arranged in descending order). Then the eigenvalue decomposition of $G G^\top$ is $U \Sigma \Sigma^\top U^\top$, and the $X^*$ that achieves the minimum satisfies</p>
+
+            <div class="equation">
+                \[X_*^\top P X_* = U \Lambda_P^{\uparrow} U^\top\]
+            </div>
+
+            <p>where $\Lambda_P^{\uparrow}$ is the diagonal matrix formed by arranging the eigenvalues of $P$ in ascending order. At this point, the optimal update amount is</p>
+
+            <div class="equation">
+                \[X_*^\top P X_* G = (U \Lambda_P^{\uparrow} U^\top)(U \Sigma V^\top) = U (\Lambda_P^{\uparrow} \Sigma) V^\top\]
+            </div>
+
+            <p>When the author first saw this result, he was quite shocked. It tells us that no matter what the original $P$ is, after orthogonal slowest descent, it can retain at most the eigenvalues; the eigenvector matrix completely disappears. The final update amount is $G$’s left and right singular matrices sandwiched around a diagonal matrix $\Lambda_P^{\uparrow} \Sigma$. This diagonal matrix is the product of $P$’s eigenvalues and $G$’s singular values in reverse order, which makes all singular values more uniform—consistent with Muon’s philosophy.</p>
+
+            <p>This result suggests that no matter how expensive the preconditioning we do, the best result is nothing more than “heading toward Muon.” Next we will see that this conclusion still applies to the general case $Q \neq I_m$.</p>
+
+            <h3>General Case</h3>
+
+            <p>Let $A = G^\top X^\top P X G$ and $B = G Y^\top Q Y G^\top$. By the invariance of the trace, we have</p>
+
+            <div class="equation">
+                \[\operatorname{tr}(G^\top X^\top P X G Y^\top Q Y) = \operatorname{tr}(A Y^\top Q Y) = \operatorname{tr}(B X^\top P X)\]
+            </div>
+
+            <p>Let the optimal solution be $X^*, Y^*$, and the corresponding $A, B$ be $A^*, B^*$. Fixing $X^*$ and $Y^*$ respectively to solve for $Y^*$ and $X^*$, according to the results of the previous section, we can write the stationary point conditions:</p>
+
+            <div class="equation">
+                \[X_*^\top P X_* = U_B \Lambda_P^{\uparrow} U_B^\top, \quad Y_*^\top Q Y_* = U_A \Lambda_Q^{\uparrow} U_A^\top\]
+            </div>
+
+            <p>where $U_A \Lambda_A^{\downarrow} U_A^\top$ and $U_B \Lambda_B^{\downarrow} U_B^\top$ are the eigenvalue decompositions of $A^*$ and $B^*$, respectively (“↓” indicates eigenvalues sorted in descending order). Our task is to analyze the properties of $\Phi = X_*^\top P X_* G Y_*^\top Q Y_*$. The first conclusion is exactly the same as in the previous section: $\Phi$ has the form $U D V^\top$, where $U \Sigma V^\top$ is the SVD of $G$, and $D$ is some diagonal matrix. The proof is not difficult. According to the stationary point conditions, direct calculation gives</p>
+
+            <div class="equation">
+                \[G^\top \Phi = U_A (\Lambda_A^{\downarrow} \Lambda_Q^{\uparrow}) U_A^\top, \quad \Phi G^\top = U_B (\Lambda_B^{\downarrow} \Lambda_P^{\uparrow}) U_B^\top\]
+            </div>
+
+            <p>This shows that both $G^\top \Phi$ and $\Phi G^\top$ are symmetric matrices. Since $U$ and $V$ are orthogonal square matrices, any $\Phi$ can be uniquely written as $\Phi = U M V^\top$ (that is, $M = U^\top \Phi V$). Substituting, we obtain $G^\top \Phi = V \Sigma^\top M V^\top$ and $\Phi G^\top = U M \Sigma^\top U^\top$. Their symmetry is respectively equivalent to the symmetry of $\Sigma^\top M$ and $M \Sigma^\top$. Written in component form, this is</p>
+
+            <div class="equation">
+                \[\sigma_i M_{i,j} = \sigma_j M_{j,i}, \quad \sigma_j M_{i,j} = \sigma_i M_{j,i}\]
+            </div>
+
+            <p>From this we obtain $(\sigma_i^2 - \sigma_j^2) M_{i,j} = 0$. Assuming the singular values of $G$ are pairwise distinct (if not, understand it as the limit of a matrix sequence), we deduce that $M_{i,j} = 0$ for $i \neq j$, i.e., $M$ is a diagonal matrix $D$. This result once again shows that: even in the general case, the eigenvector matrices of the preconditioning matrices are still eliminated by orthogonal slowest descent, leaving at most the eigenvalues.</p>
+
+            <h3>Tending Toward Equilibrium</h3>
+
+            <p>Unfortunately, we cannot easily write a closed-form solution for $D$, but we can qualitatively deduce that the diagonal entries of $D$ have a tendency toward equilibrium. Specifically, from $\Phi = U D V^\top$, we can write</p>
+
+            <div class="equation">
+                \[G^\top \Phi = V (\Sigma^\top D) V^\top, \quad \Phi G^\top = U (D \Sigma^\top) U^\top\]
+            </div>
+
+            <p>Comparing with equation (14), according to the uniqueness of the eigenvalue decomposition (note: the uniqueness of the eigenvalue decomposition depends on the eigenvalues being pairwise distinct; otherwise, we can construct counterexamples that make the problem more complex, but here we are mainly doing heuristic derivations and will not fuss over details), we can obtain that $U_A, U_B$ differ from $V, U$ by at most a permutation matrix. Thus we can write</p>
+
+            <div class="display-math">
+                \[U_A = V \Pi_Q, \quad U_B = U \Pi_P\]
+            </div>
+
+            <p>where $\Pi_Q, \Pi_P$ are two permutation matrices. Then</p>
+
+            <div class="equation">
+                \[\begin{aligned}
+                \Phi &amp;= X_*^\top P X_* G Y_*^\top Q Y_* \\
+                &amp;= (U_B \Lambda_P^{\uparrow} U_B^\top) G (U_A \Lambda_Q^{\uparrow} U_A^\top) \\
+                &amp;= (U \Pi_P \Lambda_P^{\uparrow} \Pi_P^\top U^\top)(U \Sigma V^\top)(V \Pi_Q \Lambda_Q^{\uparrow} \Pi_Q^\top V^\top) \\
+                &amp;= U \left( (\Pi_P \Lambda_P^{\uparrow} \Pi_P^\top) \Sigma (\Pi_Q \Lambda_Q^{\uparrow} \Pi_Q^\top) \right) V^\top
+                \end{aligned}\]
+            </div>
+
+            <p>Therefore $\operatorname{tr}(G^\top \Phi) = \operatorname{tr}(\Sigma^\top (\Pi_P \Lambda_P^{\uparrow} \Pi_P^\top) \Sigma (\Pi_Q \Lambda_Q^{\uparrow} \Pi_Q^\top))$. Note that each term inside the parentheses is a diagonal matrix. To find its minimum, we need to find a pairing among the eigenvalues of $P, Q, G^\top G$ that minimizes the sum of their products. This is essentially the three-sequence generalization of the sorting inequality. From <em>Sorting Inequalities and Their Generalizations</em>, we know that the ideal result is for the paired componentwise products to be equal, which corresponds to $D \propto \Sigma^{-1}$ (taking the inverse of each diagonal entry, with the shape unchanged).</p>
+
+            <p>Of course, since we are only finding the minimum through pairing, it is difficult to achieve equality of all products. We can generally only expect it to be an intermediate state between $\Sigma$ (worst case) and $\Sigma^{-1}$ (best case), and their geometric mean is precisely the identity matrix! So this once again points to the orthogonalization operation that makes all singular values uniform.</p>
+
+            <h3>Further Remarks</h3>
+
+            <p>It should be declared that the author has no intention of praising Muon and disparaging Shampoo. On the contrary, some time ago the author spent quite a bit of time testing various Shampoo variants, with the original intention of finding an optimizer better than Muon. Unfortunately, after trying for a long time, the author found that no Shampoo variant could outperform Muon. It just so happened that recently, while deriving convergence results for adaptive optimizers, the author combined the two lines of thought, and ultimately arrived at the conclusions of this article.</p>
+
+            <p>Frankly speaking, the conclusions of this article depend on the “orthogonal slowest descent” framework, and this framework also depends on a series of assumptions, each link of which is questionable. For example, using the convergence upper bound to guide optimizer design is itself a pessimistic, worst-case criterion; a smaller upper bound does not guarantee that it will actually be faster. Also, the assumption that $O_t$ varies slowly and the first-order approximations everywhere are rather crude and cannot be further accurately quantified.</p>
+
+            <p>More importantly, although minimizing the convergence upper bound appears more global, it is essentially still a greedy solution, and strictly speaking, even the proposition cannot hold! Because it takes a given sequence $g_t$ to derive the remaining parameters. However, if the learning rate or other parameters are modified, subsequent gradients will change accordingly, and it is simply impossible to have a given full gradient sequence.</p>
+
+            <p>Of course, if we accept these non-rigorous aspects and accept orthogonal slowest descent, then we can obtain the heuristic conclusions above. It tells us: we only need to focus on adjusting the spectrum (singular values) of the gradient or momentum, without spending a high price to construct complex preconditioning matrices—this is at least friendly to engineering. As for the Shampoo route, whether it works well is another matter, but the additional state variables and computation it introduces definitely come at a high engineering cost.</p>
+
+            <h3>Summary</h3>
+
+            <p>Starting from the average convergence upper bound of convex optimization, this article proposes the principle of “orthogonal slowest descent” and applies it to preconditioned optimizers based on the Kronecker product (the Muon and Shampoo families). It finds that no matter what the original preconditioning matrix is, orthogonal slowest descent will “wash away” its eigenvector matrix, leaving at most the eigenvalues to modify the singular value spectrum of the gradient (momentum), making it more uniform. All of this is highly homogeneous with Muon—as the title says.</p>
+        </article>
+    </div>
+</body>
+
+</html>
