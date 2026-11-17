@@ -255,7 +255,7 @@ h2 + .italic {
 
 .content-header + .italic + img {
     display: block;
-    width: 100%;
+    width: 50%;
     height: auto;
     margin: 0.4rem 0 0.2rem;
 }
@@ -349,6 +349,12 @@ img {
     height: auto;
 }
 
+img.half {
+    display: block;
+    width: 50%;
+    height: auto;
+}
+
 figure {
     margin: 2.5rem 0 3rem;
 }
@@ -377,14 +383,18 @@ figure {
     max-width: 100%;
 }
 
-figcaption,
-.wide-figure figcaption {
-    max-width: 52.25%;
-    margin: 0.65rem auto 0;
+figcaption {
+    margin: 0.65rem 0 0;
     color: var(--muted);
     font-size: 1.05rem;
     font-style: italic;
     line-height: 1.45;
+}
+
+.wide-figure figcaption {
+    max-width: 52.25%;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 /*
@@ -524,6 +534,7 @@ ol:has(+ .equation) {
 
 .sidenote-number {
     counter-increment: sidenote-counter;
+    pointer-events: none;
 }
 
 .sidenote-number::after,
@@ -658,13 +669,34 @@ footer {
     position: fixed;
     z-index: 0;
     inset: 0;
-    display: flex;
+    display: none;
     align-items: flex-end;
     justify-content: center;
     overflow: hidden;
     color: #c8c5bc;
     font-size: 0.65vw;
     pointer-events: none;
+}
+
+@media (max-width: 1200px) {
+    .sidenote {
+        display: none;
+        position: static;
+        float: none;
+        clear: both;
+        width: 95%;
+        margin: 1rem 2.5%;
+    }
+
+    .margin-toggle:checked + .sidenote,
+    .sidenote.is-open {
+        display: block;
+    }
+
+    .sidenote-number {
+        pointer-events: auto;
+        cursor: pointer;
+    }
 }
 
 @media (max-width: 855px) {
@@ -736,19 +768,6 @@ footer {
     .equation {
         font-size: 1.3rem;
         line-height: 1.75rem;
-    }
-
-    .sidenote {
-        display: none;
-    }
-
-    .margin-toggle:checked + .sidenote {
-        display: block;
-        float: none;
-        width: auto;
-        margin: 1rem 0 1.5rem 1rem;
-        padding-left: 1rem;
-        border-left: 1px solid var(--rule);
     }
 
     .header-nav,

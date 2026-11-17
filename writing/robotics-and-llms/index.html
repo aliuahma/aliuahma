@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advice for a Younger Me | Ali Ahmad</title>
+    <meta property="og:title" content="Advice for a Younger Me">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.aliua.me/writing/advice/">
+    <meta property="og:image" content="https://www.aliua.me/assets/images/advice-thumbnail.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Advice for a Younger Me">
+    <meta name="twitter:image" content="https://www.aliua.me/assets/images/advice-thumbnail.png">
+
+    <!-- Standard favicon -->
+    <link rel="icon" type="image/x-icon" href="../../assets/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../assets/favicon/favicon-16x16.png">
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="../../assets/favicon/apple-touch-icon.png">
+
+    <!-- Android Chrome Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="../../assets/favicon/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../../assets/favicon/android-chrome-512x512.png">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="../../site.webmanifest">
+
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-serif/1.0.0/fonts.min.css" async>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap"
+        async>
+</head>
+
+<body>
+    <div class="container">
+        <div class="content">
+            <h2>Does Robotics Go Into the LLM Hole Too?</h2>
+            <p class="italic">November 15, 2026</p>
+            <p><a href="../../index.html">Home</a></p>
+
+            <p>I get asked about what I think about LLMs doing robotics several times a week, so I figured I should write something about it.</p>
+
+            <p>TL;DR: it's not over.</p>
+
+            <img src="its-not-over.gif" alt="A close-up of a white cat with the caption ITS NOT OVER">
+
+            <p>Many people (and for some time myself as well) think about LLMs doing robotics as GPT 8 or Fable 7 outputting 1,000 tokens/sec, zero-shot-ing every imaginable robot task<span class="footnote">As well as basically any other task we could think of.</span>. Whether such a model can exist is up to discussion, but of course if we are comparing to this oracle LLM, we will lose, obviously. </p>
+
+            <img class="half" src="vla-dva-gpt.jpg" alt="Expanding brain meme labeled VLA, DVA, and GPT 67">
+
+            <p>In this post, we will first discuss practical considerations for modeling robot policies. Then, we will indulge ourselves, and consider modeling in the limit.</p>
+
+            <h3>The models, they just want to scale</h3>
+
+            <p>LLMs are clearly capable, and they have shown us that models at enormous scale can generalize to entire capabilities that they weren’t trained for (allegedly). We trained for visual reasoning, blender, CAD, image generation, and we got robotics out. Isn’t that just remarkable?</p>
+
+            <p>If you believe in the scaling laws of other modalities (which I do), then this might imply that we have many wonderful surprises waiting for us at the end of our scaling rainbows. We are already seeing signs of this: we know that the stronger our pre-trained base gets, the less post-training data we need, and the better our post-training becomes<span class="footnote"><a href="https://www.rhoda.ai/research/scaling-web-video-pretraining">Does Scaling Web-Video Pre-training Help Real Robots Do Real Work?</a> (Rhoda AI Team, 2026). <a href="https://www.waldenrobotics.com/news/lbm-2-0-accelerating-learning-in-deployment">LBM 2.0: Accelerating Learning in Deployment</a> (Walden Robotics, 2026). <a href="https://generalistai.com/blog/gen-1.5">Gen 1.5: Accelerating Learning in Deployment</a> (Generalist Team, 2026).</span>.</p>
+
+            <p>We know that the models will continue to improve the more we scale. The real question is if our slope is steeper than that of LLMs.</p>
+
+
+            <figure>
+                <img src="goodness-vs-flops.jpg" alt="A chart of goodness versus time and flops. An orange arrow goes from where we are right now to where we're going. Dashed blue arrows ask where LLMs might go from where they are right now.">
+                <figcaption>Credits to <a href="https://x.com/BaadeAlan">Alan Baade</a> for first drawing this out to me in August</figcaption>
+            </figure>
+
+            <p>a</p>
+
+            <h3>Modeling in the limit</h3>
+
+            <p class="with-space">
+                <span class="italic">Edited November 15, 2026</span>
+            </p>
+
+        </div>
+    </div>
+    <script src="../../assets/js/footnotes.js"></script>
+</body>
+
+</html>
